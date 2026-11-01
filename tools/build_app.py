@@ -7,6 +7,18 @@ for r in rat:
     if r['chapter'] not in titles: titles.append(r['chapter'])
 live = set(range(len(titles))) if which == 'all' else {int(x) for x in which.split(',')}
 images = json.load(open('images.json')) if os.path.exists('images.json') else {}
+# explicit text corrections approved by Kais (each must match the PDF text exactly before it is applied)
+corrections = json.load(open('corrections.json')) if os.path.exists('corrections.json') else []
+for fx in corrections:
+    hit = [q for q in bank if q['chapter_index'] == fx['ch'] - 1 and q['n'] == fx['n']]
+    assert len(hit) == 1, fx
+    q = hit[0]
+    if fx['field'] == 'stem':
+        assert q['stem'] == fx['from'], fx; q['stem'] = fx['to']
+    else:
+        assert q['options'][fx['field']] == fx['from'], fx; q['options'][fx['field']] = fx['to']
+        if q['answer'] == fx['field']: q['answer_text'] = fx['to']
+print('corrections applied:', len(corrections))
 chapters = [dict(title=t, count=sum(1 for r in rat if r['chapter'] == t)) for t in titles]
 assets = []
 for q, r in zip(bank, rat):
