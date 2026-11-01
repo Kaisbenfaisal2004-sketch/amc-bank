@@ -1,10 +1,10 @@
 // Offline copy of the app itself (questions are kept by Firebase on the device, not here). Answers from the stored copy straight away,
 // and refreshes that copy in the background whenever the internet is available.
-const CACHE = 'qbank-v4';
+const CACHE = 'qbank-v5';
 const SHELL = [
   './', 'index.html', 'app.css', 'app.js', 'sync.js', 'config.js', 'vendor/firebase.js', 'manifest.webmanifest',
-  'fonts/atkinson-hyperlegible-latin-400-normal.woff2', 'fonts/atkinson-hyperlegible-latin-700-normal.woff2',
-  'fonts/atkinson-hyperlegible-latin-400-italic.woff2', 'fonts/ibm-plex-mono-latin-500-normal.woff2',
+  'fonts/inter-tight-latin-400-normal.woff2', 'fonts/inter-tight-latin-500-normal.woff2', 'fonts/inter-tight-latin-600-normal.woff2',
+  'fonts/inter-tight-latin-700-normal.woff2', 'fonts/inter-tight-latin-800-normal.woff2',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
 ];
 

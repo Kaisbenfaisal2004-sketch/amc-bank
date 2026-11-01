@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AMC Question Bank</title>
-<meta name="theme-color" content="#7A2E5C" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#15121A" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#1E3A8A">
+<meta name="color-scheme" content="light">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="AMC Bank">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -17,28 +17,58 @@
 </head>
 <body>
 
-<!-- Home: subjects + account -->
-<section id="home">
-  <div class="wrap">
-    <div class="eyebrow">AMC MCQ</div>
-    <h1>Question Bank</h1>
-    <ul class="chlist" id="banklist"><li class="loading">Loading…</li></ul>
-    <div class="account" id="account">
+<!-- ============ HOME (dashboard) ============ -->
+<section id="home" class="screen">
+  <header class="top">
+    <div class="wrap">
+      <div class="eyebrow">AMC MCQ · Question Bank</div>
+      <h1 id="banktitle">Question Bank</h1>
+      <div class="kpis" id="kpis">
+        <div class="kpi"><b id="k-ans">0</b><small>Answered</small></div>
+        <div class="kpi"><b id="k-pct">—</b><small>Correct</small></div>
+        <div class="kpi"><b id="k-left">0</b><small>Remaining</small></div>
+      </div>
+    </div>
+  </header>
+  <div class="wrap body">
+    <div class="pills" id="subjects" hidden></div>
+    <div class="pills" id="filters">
+      <button class="pill on" data-f="all">All chapters</button>
+      <button class="pill" data-f="wrong">Incorrect <span id="wrongcount"></span></button>
+    </div>
+    <div id="signedout" class="card note" hidden>
+      <p>Sign in to load your question banks.</p>
+      <button class="btn primary" id="go-account">Sign in</button>
+    </div>
+    <div id="loading" class="card note" hidden><p id="loadmsg">Loading…</p></div>
+    <ul class="tbl" id="chlist"></ul>
+    <div id="wrongview" hidden></div>
+    <p class="lede" id="lede"></p>
+  </div>
+</section>
+
+<!-- ============ ACCOUNT ============ -->
+<section id="account" class="screen" hidden>
+  <header class="top slim"><div class="wrap"><div class="eyebrow">AMC MCQ · Question Bank</div><h1>Account</h1></div></header>
+  <div class="wrap body">
+    <div class="card">
       <div class="acc-status"><span class="dot" id="syncdot"></span><span id="syncmsg">Saved on this device</span></div>
       <div id="acc-out" hidden>
-        <p class="acc-help">Sign in to keep your answers in step on all your devices.</p>
         <form id="acc-form" class="acc-form" novalidate>
-          <input id="acc-email" type="email" autocomplete="username" placeholder="Email" required>
+          <label class="lbl" for="acc-email">Email</label>
+          <input id="acc-email" type="email" autocomplete="username" placeholder="you@example.com" required>
+          <label class="lbl" for="acc-pass">Password</label>
           <div class="pw">
-            <input id="acc-pass" type="password" autocomplete="current-password" placeholder="Password (6+ characters)" required minlength="6">
+            <input id="acc-pass" type="password" autocomplete="current-password" placeholder="6+ characters" required minlength="6">
             <button type="button" class="eye" id="acc-eye" aria-label="Show password" aria-pressed="false">Show</button>
           </div>
-          <div class="pw" id="acc-pass2-row" hidden>
-            <input id="acc-pass2" type="password" autocomplete="new-password" placeholder="Type the password again">
+          <div id="acc-pass2-row" hidden>
+            <label class="lbl" for="acc-pass2">Confirm password</label>
+            <div class="pw"><input id="acc-pass2" type="password" autocomplete="new-password" placeholder="Type the password again"></div>
           </div>
           <p class="acc-match" id="acc-match" hidden></p>
-          <div class="acc-btns">
-            <button type="submit" class="solid" id="acc-submit">Sign in</button>
+          <button type="submit" class="btn primary wide" id="acc-submit">Sign in</button>
+          <div class="acc-links">
             <button type="button" class="link" id="acc-mode">New here? Create account</button>
             <button type="button" class="link" id="acc-reset">Forgot password</button>
           </div>
@@ -46,47 +76,39 @@
         </form>
       </div>
       <div id="acc-in" hidden>
-        <p class="acc-help">Signed in as <b id="acc-who"></b></p>
-        <div class="acc-btns">
-          <label class="ghost filebtn" for="imp-file">Add or update a subject…</label>
-          <input id="imp-file" type="file" accept=".json,application/json" hidden>
-          <button type="button" class="ghost" id="acc-signout">Sign out</button>
-        </div>
-        <p class="acc-help" id="imp-msg" hidden></p>
+        <p class="who">Signed in as <b id="acc-who"></b></p>
+        <label class="btn wide" for="imp-file">Add or update a subject…</label>
+        <input id="imp-file" type="file" accept=".json,application/json" hidden>
+        <p class="note-sm" id="imp-msg" hidden></p>
+        <button type="button" class="btn wide ghost" id="acc-signout">Sign out</button>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Contents of one subject -->
-<section id="contents" hidden>
-  <div class="wrap">
-    <button class="ghost backlink" id="tohome">← Subjects</button>
-    <div class="eyebrow">AMC MCQ · Question Bank</div>
-    <h1 id="banktitle"></h1>
-    <p class="lede" id="lede"></p>
-    <ul class="chlist" id="chlist"></ul>
-  </div>
-</section>
-
-<!-- Quiz -->
-<section id="quiz" hidden>
-  <header class="bar">
+<!-- ============ QUIZ ============ -->
+<section id="quiz" class="screen" hidden>
+  <header class="qbar">
     <div class="wrap">
-      <button class="ghost" id="back" aria-label="Back to contents">Contents</button>
-      <div class="title"><div class="eyebrow" id="chnum"></div><div id="chname"></div></div>
-      <span class="pill" id="score"></span>
-      <button class="ghost" id="mapbtn" aria-expanded="false">Map</button>
+      <button class="qback" id="back" aria-label="Back">‹ <span id="chnum">Chapter</span></button>
+      <b id="qcount">Q1 / 1</b>
+      <button class="qcopy" id="copy" title="Copy the question and its options">⧉ Copy</button>
     </div>
-    <div class="track"><i id="trackbar"></i></div>
-    <div class="map" id="map" hidden><div class="wrap" id="mapgrid"></div></div>
   </header>
+  <div class="dots" id="dots"></div>
   <main><div class="wrap" id="qbox"></div></main>
-  <nav class="nav"><div class="wrap">
-    <button id="prev">← Previous</button>
-    <button id="next" class="next">Next →</button>
+  <nav class="qnav"><div class="wrap">
+    <button id="prev" class="btn">‹ Previous</button>
+    <button id="next" class="btn primary">Next ›</button>
   </div></nav>
 </section>
+
+<!-- ============ TAB BAR ============ -->
+<nav class="tabbar" id="tabbar">
+  <button data-t="home" class="on"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg>Home</button>
+  <button data-t="wrong"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Incorrect</button>
+  <button data-t="account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Account</button>
+</nav>
 <div class="toast" id="toast" hidden></div>
 
 <script type="module" src="app.js"></script>

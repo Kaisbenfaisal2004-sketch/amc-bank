@@ -26,11 +26,6 @@ os.makedirs('out', exist_ok=True)
 out_name = 'out/Womens_Health_App_Import.json'
 open(out_name, 'w', encoding='utf-8').write(json.dumps(data, ensure_ascii=False, separators=(',', ':')))
 print('import file', out_name)
-fonts = '''@font-face{font-family:"Atkinson Hyperlegible";font-weight:400;font-style:normal;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format("woff2")}
-@font-face{font-family:"Atkinson Hyperlegible";font-weight:700;font-style:normal;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-700-normal.woff2) format("woff2")}
-@font-face{font-family:"Atkinson Hyperlegible";font-weight:400;font-style:italic;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-400-italic.woff2) format("woff2")}
-@font-face{font-family:"IBM Plex Mono";font-weight:500;font-style:normal;font-display:swap;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2")}
-'''
-css = fonts + open('src/base.css').read() + open('src/extra.css').read()
+css = open('src/app-b.css').read()
 open(app + '/app.css', 'w').write(css)
 print('live', sorted(live), 'questions', sum(len(c.get('questions', [])) for c in chapters), 'KB', len(raw.encode()) // 1024, 'version', data['version'])
