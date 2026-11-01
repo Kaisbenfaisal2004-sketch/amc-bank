@@ -17,6 +17,12 @@ let filter = 'all';
 let S = null;   // { kind:'chapter'|'review', ci, title, label, items:[q], rev:{qid:letter} }
 let qi = 0;
 
+/* ---------- device data ---------- */
+function wipeLocal() {
+  try { Object.keys(localStorage).filter(k => k.startsWith('qb:')).forEach(k => localStorage.removeItem(k)); } catch (e) {}
+  BANKS = []; bank = null; prog = {}; S = null;
+}
+
 /* ---------- progress (local first, synced when signed in) ---------- */
 const progKey = id => 'qb:progress:' + id;
 const saved = q => (prog[q.id] && prog[q.id].p) || null;
@@ -101,19 +107,20 @@ function renderHome() {
   $('chlist').hidden = filter !== 'all'; $('wrongview').hidden = filter !== 'wrong';
   if (filter === 'all') {
     $('chlist').innerHTML = bank.chapters.map((c, i) => {
-      const live = !!c.questions; const s = live ? chStats(i) : { a: 0, r: 0, n: c.count };
+      const live = !!c.questions; const s = live ? chStats(i) : { a: 0, r: 0, n: Number(c.count) || 0 };
       const pct = s.a ? Math.round(100 * s.r / s.a) : null;
       const cls = pct === null ? 'none' : pct >= 75 ? 'hi' : pct >= 60 ? 'mid' : 'lo';
       const sub = !live ? 'Coming in the full build' : s.a ? s.a + ' of ' + s.n + ' answered' : s.n + ' questions';
       return '<li><button class="row" data-c="' + i + '"' + (live ? '' : ' disabled') + '><span class="n">' + String(i + 1).padStart(2, '0') + '</span>' +
         '<span><span class="t">' + esc(c.title) + '</span><span class="sub">' + sub + '</span>' +
-        '<span class="seg"><i class="g" style="width:' + (s.n ? 100 * s.r / s.n : 0) + '%"></i><i class="r" style="width:' + (s.n ? 100 * (s.a - s.r) / s.n : 0) + '%"></i></span></span>' +
+        '<span class="seg"><i class="g" data-w="' + (s.n ? 100 * s.r / s.n : 0) + '"></i><i class="r" data-w="' + (s.n ? 100 * (s.a - s.r) / s.n : 0) + '"></i></span></span>' +
         '<span class="s ' + cls + '">' + (pct === null ? '—' : pct + '%') + '</span></button></li>';
     }).join('');
-    $('lede').textContent = bank.chapters.length + ' chapters · ' + bank.chapters.reduce((t, c) => t + c.count, 0) + ' questions' + (bank.pilot ? ' · pilot: chapter 1 only' : '');
+    document.querySelectorAll('#chlist [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
+    $('lede').textContent = bank.chapters.length + ' chapters · ' + bank.chapters.reduce((t, c) => t + (Number(c.count) || 0), 0) + ' questions' + (bank.pilot ? ' · pilot: chapter 1 only' : '');
   } else {
     const wq = wrongQs();
-    if (!wq.length) { $('wrongview').innerHTML = '<div class="wrongcard"><div class="big" style="color:var(--ok)">0</div><p>No incorrect answers right now. Questions you get wrong will gather here so you can redo them.</p></div>'; }
+    if (!wq.length) { $('wrongview').innerHTML = '<div class="wrongcard"><div class="big ok">0</div><p>No incorrect answers right now. Questions you get wrong will gather here so you can redo them.</p></div>'; }
     else {
       const per = bank.chapters.map((c, i) => ({ i, t: c.title, n: (c.questions || []).filter(q => wq.includes(q)).length })).filter(x => x.n);
       $('wrongview').innerHTML = '<div class="wrongcard"><div class="big">' + wq.length + '</div><p>questions you answered incorrectly. Redo them here; your first answers stay as they are.</p>' +
@@ -173,12 +180,12 @@ function renderQ() {
   if ($('quiz').hidden || !S) return;
   const q = S.items[qi], p = pick(q), s = sessStats();
   $('chnum').textContent = S.label;
-  $('qcount').textContent = (S.kind === 'review' ? '' : 'Q') + (S.kind === 'review' ? (qi + 1) : q.n) + ' / ' + S.items.length;
+  $('qcount').textContent = (S.kind === 'review' ? '' : 'Q') + (S.kind === 'review' ? (qi + 1) : (q.n | 0)) + ' / ' + S.items.length;
   let h = '<div class="qhead">';
-  if (S.kind === 'review') h += '<span class="tag">Ch ' + (chOf(q) + 1) + ' · Q' + q.n + '</span>';
+  if (S.kind === 'review') h += '<span class="tag">Ch ' + (chOf(q) + 1) + ' · Q' + (q.n | 0) + '</span>';
   if (q.recall > 0) h += '<span class="tag rc">Recall ×' + q.recall + '</span>';
   h += '</div><p class="stem" data-role="stem">' + esc(q.stem) + '</p>';
-  if (q.image && /^data:image\/(jpeg|png|webp);base64,/.test(q.image)) h += '<img class="qimg" src="' + esc(q.image) + '" alt="Image for question ' + q.n + '">';
+  if (q.image && /^data:image\/(jpeg|png|webp);base64,/.test(q.image)) h += '<img class="qimg" src="' + esc(q.image) + '" alt="Image for question ' + (q.n | 0) + '">';
   h += '<ul class="opts">' + L.map(k => {
     let cls = 'op', mk = '';
     if (p) { if (k === q.answer) { cls += ' right'; mk = k === p ? 'Your answer' : 'Correct'; } else if (k === p) { cls += ' wrong'; mk = 'Your answer'; } else cls += ' dim'; }
@@ -187,7 +194,7 @@ function renderQ() {
   if (p) {
     const ok = p === q.answer;
     h += '<div class="exp"><div class="h">Explanation</div><div class="v ' + (ok ? 'ok' : 'bad') + '">' + (ok ? 'Correct' : 'Incorrect') + '</div>' +
-      '<div class="ans">Answer: <span data-role="answer">' + q.answer + ') ' + esc(q.options[q.answer]) + '</span></div>' +
+      '<div class="ans">Answer: <span data-role="answer">' + esc(q.answer) + ') ' + esc(q.options[q.answer]) + '</span></div>' +
       '<p class="rule">' + esc(q.rule) + '</p>' + (q.caution ? '<div class="tip"><b>Exam tip</b> ' + esc(q.caution) + '</div>' : '') + '</div>' +
       '<details class="ev"><summary>Source and evidence</summary><div class="evb"><div class="src">' + esc(q.source) + '</div>' +
       (q.quote ? '<blockquote>' + esc(q.quote) + '</blockquote>' : '') +
@@ -318,13 +325,17 @@ async function accAction(fn) {
   try { await fn(email, pass); } catch (e) { err.textContent = errText(e); err.hidden = false; }
   document.querySelectorAll('#acc-form button').forEach(b => b.disabled = false);
 }
-$('acc-form').addEventListener('submit', e => { e.preventDefault(); accAction((a, b) => accMode === 'up' ? sync.signUp(a, b) : sync.signIn(a, b)); });
+$('acc-form').addEventListener('submit', e => { e.preventDefault(); accAction((a, b) => sync.signIn(a, b)); });
 $('acc-reset').onclick = async () => {
   const email = $('acc-email').value.trim(), err = $('acc-err');
   if (!email) { err.textContent = 'Type your email first, then tap Forgot password.'; err.hidden = false; return; }
   try { await sync.resetPassword(email); err.hidden = true; toast('Reset link sent to ' + email); } catch (e) { err.textContent = errText(e); err.hidden = false; }
 };
-$('acc-signout').onclick = async () => { sync.stop(); await sync.signOut(); };
+$('acc-signout').onclick = async () => {
+  $('acc-signout').disabled = true; $('acc-signout').textContent = 'Signing out and clearing this device…';
+  await sync.signOutAndWipe(); wipeLocal();
+  location.reload();
+};
 
 async function refreshBanks() {
   try { BANKS = await sync.listBanks(); store.set('qb:banks', BANKS); } catch (e) { /* keep the last list */ }
@@ -332,11 +343,29 @@ async function refreshBanks() {
   if (BANKS.length) await openBank(BANKS.some(b => b.id === want) ? want : BANKS[0].id); else renderHome();
   if (navigator.onLine) for (const m of BANKS) { if (bank && m.id === bank.id) continue; try { await loadBank(m); } catch (e) {} }
 }
+function validateBank(b) {
+  const str = x => typeof x === 'string';
+  if (!b || !str(b.id) || !/^[a-z0-9-]{1,40}$/.test(b.id)) return 'id';
+  if (!str(b.title) || !Array.isArray(b.chapters) || !b.chapters.length || b.chapters.length > 200) return 'chapters';
+  for (const c of b.chapters) {
+    if (!str(c.title) || !Number.isInteger(c.count) || c.count < 0) return 'chapter header';
+    if (c.questions === undefined) continue;
+    if (!Array.isArray(c.questions)) return 'questions';
+    for (const q of c.questions) {
+      if (!str(q.id) || !/^[A-Za-z0-9_-]{1,40}$/.test(q.id) || !Number.isInteger(q.n) || !str(q.stem) || !L.includes(q.answer)) return 'question ' + (q && q.id);
+      if (!q.options || L.some(k => !str(q.options[k]))) return 'options ' + q.id;
+      for (const f of ['rule', 'source', 'quote', 'url', 'caution']) if (q[f] !== undefined && !str(q[f])) return f + ' ' + q.id;
+      if (q.image !== undefined && !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(q.image)) return 'image ' + q.id;
+      if (q.recall !== undefined && !Number.isInteger(q.recall)) return 'recall ' + q.id;
+    }
+  }
+  return '';
+}
 async function importFile(file) {
   const msg = $('imp-msg'); msg.hidden = false; msg.textContent = 'Reading ' + file.name + '…';
   try {
     const b = JSON.parse(await file.text());
-    if (!b.id || !b.title || !Array.isArray(b.chapters)) throw new Error('This file is not a question bank file.');
+    const bad = validateBank(b); if (bad) throw new Error('This file is not a valid question bank (' + bad + ').');
     msg.textContent = 'Uploading ' + b.title + ' to your account…';
     await sync.importBank(b);
     const n = b.chapters.reduce((s, c) => s + (c.questions ? c.questions.length : 0), 0);
@@ -350,11 +379,13 @@ async function importFile(file) {
 $('imp-file').addEventListener('change', e => { const f = e.target.files[0]; if (f) importFile(f); e.target.value = ''; });
 
 /* ---------- start ---------- */
+if (window.top !== window.self) { try { window.top.location = window.self.location.href; } catch (e) { document.documentElement.hidden = true; } }
 async function start() {
   renderHome();
   try { sync = await createSync(); } catch (e) { sync = null; }
   accountUI(); renderHome();
   if (sync) sync.onUser(async u => {
+    if (u) { const last = store.get('qb:uid', null); if (last && last !== u.uid) { wipeLocal(); } store.set('qb:uid', u.uid); }
     user = u; accountUI();
     if (u) { setSyncState(navigator.onLine ? 'pending' : 'offline'); show('home'); await refreshBanks(); syncAllBanks(); }
     else { BANKS = []; bank = null; prog = {}; S = null; renderHome(); }

@@ -20,12 +20,15 @@ export async function createSync() {
   const progRef = (uid, bankId) => fb.doc(db, 'users', uid, 'progress', bankId);
   const timeout = ms => new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms));
   // server first when online (with a time limit), device copy otherwise
+  // A refusal from the server (wrong account / signed out) is final: never fall back to the device copy then.
+  const denied = e => e && /permission-denied|unauthenticated/.test(e.code || '');
   async function readDocs(ref, preferCache) {
+    if (!auth.currentUser) throw Object.assign(new Error('signed out'), { code: 'unauthenticated' });
     if (preferCache || !navigator.onLine) {
       try { const s = await fb.getDocsFromCache(ref); if (!s.empty || !navigator.onLine) return s; } catch (e) { if (!navigator.onLine) throw e; }
     }
     try { return await Promise.race([fb.getDocs(ref), timeout(12000)]); }
-    catch (e) { return fb.getDocsFromCache(ref); }
+    catch (e) { if (denied(e)) throw e; return fb.getDocsFromCache(ref); }
   }
   return {
     onUser(cb) { return fb.onAuthStateChanged(auth, u => cb(u ? { uid: u.uid, email: u.email } : null)); },
@@ -33,6 +36,13 @@ export async function createSync() {
     signUp: (e, p) => fb.createUserWithEmailAndPassword(auth, e, p),
     resetPassword: e => fb.sendPasswordResetEmail(auth, e),
     signOut: () => fb.signOut(auth),
+    // sign out AND remove every copy this device keeps (Firestore's on-device cache included)
+    async signOutAndWipe() {
+      if (unsub) { unsub(); unsub = null; }
+      try { await fb.signOut(auth); } catch (e) {}
+      try { await fb.terminate(db); } catch (e) {}
+      try { await fb.clearIndexedDbPersistence(db); } catch (e) {}
+    },
 
     async listBanks() {
       const s = await readDocs(fb.collection(db, 'banks'), false);

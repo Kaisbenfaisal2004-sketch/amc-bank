@@ -1,6 +1,12 @@
 # Question content never goes in this public repo (it lives in Firebase).
-tools/out/
-tools/*.json
-tools/raw*.txt
+# Keep subject files OUTSIDE this folder; these rules are a second line of defence.
+*.json
+!manifest.webmanifest
+!tools/package.json
+!tools/package-lock.json
+*.csv
+*.txt
+*.pdf
+tools/out*/
 tools/test/app-*/
 node_modules/

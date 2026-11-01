@@ -6,7 +6,7 @@
 <title>AMC Question Bank</title>
 <meta name="theme-color" content="#1E3A8A">
 <meta name="color-scheme" content="light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firebaseinstallations.googleapis.com; frame-src https://amc-bank-a8b4e.firebaseapp.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="AMC Bank">
@@ -70,7 +70,7 @@
           <p class="acc-match" id="acc-match" hidden></p>
           <button type="submit" class="btn primary wide" id="acc-submit">Sign in</button>
           <div class="acc-links">
-            <button type="button" class="link" id="acc-mode">New here? Create account</button>
+            <button type="button" class="link" id="acc-mode" hidden>New here? Create account</button>
             <button type="button" class="link" id="acc-reset">Forgot password</button>
           </div>
           <p class="acc-err" id="acc-err" hidden></p>

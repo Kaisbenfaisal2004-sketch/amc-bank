@@ -37,6 +37,8 @@ export const initializeFirestore = () => ({});
 export const persistentLocalCache = () => ({});
 export const persistentMultipleTabManager = () => ({});
 export const CACHE_SIZE_UNLIMITED = -1;
+export const terminate = async () => {};
+export const clearIndexedDbPersistence = async () => { localStorage.removeItem('__mockcache'); localStorage.removeItem('__mockpending'); for (const k in cache) delete cache[k]; };
 export const doc = (db, ...parts) => parts.join('/');
 export const collection = (db, ...parts) => ({ col: parts.join('/') });
 const docsOf = (col, src) => { const pre = col + '/'; return Object.keys(src).filter(p => p.startsWith(pre) && !p.slice(pre.length).includes('/')).sort(); };
@@ -44,6 +46,7 @@ const qsnap = (paths, fromCache) => { const docs = paths.map(p => snapDoc(p, fro
 export const getDocsFromCache = async ref => qsnap(docsOf(ref.col, cache), true);
 export const getDocs = async ref => {
   if (!navigator.onLine) throw offlineErr();
+  if (ref.col.startsWith('banks') && (!current || current.email !== 'kais@test.com')) throw { code: 'permission-denied' };
   const list = await (await fetch('/__mock/list?col=' + encodeURIComponent(ref.col))).json();
   list.forEach(([p, d]) => { cache[p] = d; }); save();
   return qsnap(list.map(x => x[0]), false);

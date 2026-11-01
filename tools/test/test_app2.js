@@ -39,22 +39,19 @@ const home = async p => { if (!(await p.isHidden('#quiz'))) await p.click('#back
   check('service worker controls page', await A.evaluate(() => !!navigator.serviceWorker.controller));
   check('signed out: no questions shown', !(await A.isHidden('#signedout')) && (await A.$$('#chlist .row')).length === 0);
   // a stranger cannot add subjects
-  // password UI: show toggle + confirm field
-  await A.click('.tabbar button[data-t="account"]'); await A.click('#acc-mode'); await A.fill('#acc-email', 'x@test.com'); await A.fill('#acc-pass', 'secret1'); await A.fill('#acc-pass2', 'secret2');
-  check('mismatch shown', (await A.textContent('#acc-match')).includes('do not match'));
-  await A.click('#acc-submit'); check('mismatch blocks sign-up', (await A.textContent('#acc-err')).includes('not the same'));
-  await A.click('#acc-eye'); check('show password works', (await A.getAttribute('#acc-pass', 'type')) === 'text' && (await A.getAttribute('#acc-pass2', 'type')) === 'text');
-  await A.fill('#acc-pass2', 'secret1'); check('match shown', (await A.textContent('#acc-match')).includes('match ✓'));
-  if (shots) await A.screenshot({ path: shots + '/v3_signup.png' });
-  await A.click('#acc-mode');
-  await signIn(A, 'stranger@test.com', 'up');
+  // sign-up is closed: no create-account link; show-password toggle still works
+  await A.click('.tabbar button[data-t="account"]');
+  check('no create-account link', await A.isHidden('#acc-mode'));
+  await A.fill('#acc-pass', 'secret1'); await A.click('#acc-eye'); check('show password works', (await A.getAttribute('#acc-pass', 'type')) === 'text');
+  await A.click('#acc-eye');
+  await signIn(A, 'stranger@test.com');
   await A.setInputFiles('#imp-file', importPath); await A.waitForFunction(() => /not allowed|Could not/.test(document.getElementById('imp-msg').textContent));
   check('stranger cannot import', (await A.textContent('#imp-msg')).includes('not allowed'));
-  await A.click('.tabbar button[data-t="account"]'); await A.click('#acc-signout'); await A.waitForSelector('#acc-out:not([hidden])');
+  await A.click('.tabbar button[data-t="account"]'); await A.click('#acc-signout'); await A.waitForLoadState('load'); await A.waitForSelector('#signedout:not([hidden]), #chlist .row');
   // owner imports the subject
   await signIn(A, 'kais@test.com');
   await A.click('.tabbar button[data-t="account"]'); await A.setInputFiles('#imp-file', importPath); await A.waitForFunction(() => /saved/.test(document.getElementById('imp-msg').textContent), null, { timeout: 15000 });
-  check('owner import saved 58', (await A.textContent('#imp-msg')).includes('58 questions'), await A.textContent('#imp-msg'));
+  check('owner import saved', /saved: \d+ questions/.test(await A.textContent('#imp-msg')), await A.textContent('#imp-msg'));
   if (shots) await A.screenshot({ path: shots + '/b_account.png', fullPage: true });
   await A.click('.tabbar button[data-t="home"]');
   await openCh1(A);
@@ -110,8 +107,13 @@ const home = async p => { if (!(await p.isHidden('#quiz'))) await p.click('#back
   await A.click('#reset'); await A.click('#reset'); await sleep(2500);
   check('reset reaches other device', !/[ox]/.test(await mapState(B)), (await mapState(B)).slice(0, 10));
   // sign out hides questions
-  await home(B); await B.click('.tabbar button[data-t="account"]'); await B.click('#acc-signout'); await sleep(300); await B.click('.tabbar button[data-t="home"]');
+  await home(B); await B.click('.tabbar button[data-t="account"]'); await B.click('#acc-signout'); await B.waitForLoadState('load'); await sleep(1200);
   check('signed out hides subjects', !(await B.isHidden('#signedout')) && (await B.$$('#chlist .row')).length === 0);
+  const left = await B.evaluate(() => ({ qb: Object.keys(localStorage).filter(k => k.startsWith('qb:')), cache: localStorage.getItem('__mockcache') }));
+  check('sign-out wipes this device', left.qb.length === 0 && (!left.cache || left.cache === '{}'), left.qb);
+  // another account signing in on this same device sees no questions
+  await signIn(B, 'stranger@test.com'); await sleep(1500); await B.click('.tabbar button[data-t="home"]');
+  check('other account on same device sees nothing', (await B.$$('#chlist .row')).length === 0, await B.textContent('#loadmsg'));
   check('no page errors', errs.length === 0, errs);
   console.log(JSON.stringify(results, null, 1));
   await browser.close();

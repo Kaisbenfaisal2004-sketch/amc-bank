@@ -1,0 +1,11 @@
+{
+  "name": "amc-bank-tools",
+  "private": true,
+  "description": "Builds vendor/firebase.js (browser bundle). Install with: npm ci --ignore-scripts",
+  "dependencies": {
+    "firebase": "13.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}
