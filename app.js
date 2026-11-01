@@ -230,7 +230,7 @@ async function syncAllBanks() {
       setTimeout(() => { if (!done) { done = true; res(); } }, 6000);
     });
   }
-  if (bank) watchBank(); else sync.stop();
+  if (bank) watchBank(); else { sync.stop(); setSyncState(navigator.onLine ? 'ok' : 'offline'); }
   if (!$('home').hidden) renderHome();
 }
 function errText(e) {
