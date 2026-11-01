@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AMC Question Bank</title>
+<meta name="theme-color" content="#7A2E5C" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15121A" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AMC Bank">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<!-- Home: subjects + account -->
+<section id="home">
+  <div class="wrap">
+    <div class="eyebrow">AMC MCQ</div>
+    <h1>Question Bank</h1>
+    <ul class="chlist" id="banklist"><li class="loading">Loading…</li></ul>
+    <div class="account" id="account">
+      <div class="acc-status"><span class="dot" id="syncdot"></span><span id="syncmsg">Saved on this device</span></div>
+      <div id="acc-out" hidden>
+        <p class="acc-help">Sign in to keep your answers in step on all your devices.</p>
+        <form id="acc-form" class="acc-form" novalidate>
+          <input id="acc-email" type="email" autocomplete="username" placeholder="Email" required>
+          <input id="acc-pass" type="password" autocomplete="current-password" placeholder="Password (6+ characters)" required minlength="6">
+          <div class="acc-btns">
+            <button type="submit" class="solid" id="acc-signin">Sign in</button>
+            <button type="button" class="ghost" id="acc-signup">Create account</button>
+            <button type="button" class="link" id="acc-reset">Forgot password</button>
+          </div>
+          <p class="acc-err" id="acc-err" hidden></p>
+        </form>
+      </div>
+      <div id="acc-in" hidden>
+        <p class="acc-help">Signed in as <b id="acc-who"></b></p>
+        <div class="acc-btns">
+          <label class="ghost filebtn" for="imp-file">Add or update a subject…</label>
+          <input id="imp-file" type="file" accept=".json,application/json" hidden>
+          <button type="button" class="ghost" id="acc-signout">Sign out</button>
+        </div>
+        <p class="acc-help" id="imp-msg" hidden></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contents of one subject -->
+<section id="contents" hidden>
+  <div class="wrap">
+    <button class="ghost backlink" id="tohome">← Subjects</button>
+    <div class="eyebrow">AMC MCQ · Question Bank</div>
+    <h1 id="banktitle"></h1>
+    <p class="lede" id="lede"></p>
+    <ul class="chlist" id="chlist"></ul>
+  </div>
+</section>
+
+<!-- Quiz -->
+<section id="quiz" hidden>
+  <header class="bar">
+    <div class="wrap">
+      <button class="ghost" id="back" aria-label="Back to contents">Contents</button>
+      <div class="title"><div class="eyebrow" id="chnum"></div><div id="chname"></div></div>
+      <span class="pill" id="score"></span>
+      <button class="ghost" id="mapbtn" aria-expanded="false">Map</button>
+    </div>
+    <div class="track"><i id="trackbar"></i></div>
+    <div class="map" id="map" hidden><div class="wrap" id="mapgrid"></div></div>
+  </header>
+  <main><div class="wrap" id="qbox"></div></main>
+  <nav class="nav"><div class="wrap">
+    <button id="prev">← Previous</button>
+    <button id="next" class="next">Next →</button>
+  </div></nav>
+</section>
+<div class="toast" id="toast" hidden></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

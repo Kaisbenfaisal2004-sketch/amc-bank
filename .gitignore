@@ -1,0 +1,6 @@
+# Question content never goes in this public repo (it lives in Firebase).
+tools/out/
+tools/*.json
+tools/raw*.txt
+tools/test/app-*/
+node_modules/
