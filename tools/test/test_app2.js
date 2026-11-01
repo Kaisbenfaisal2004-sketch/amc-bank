@@ -11,7 +11,7 @@ const ch1 = bank.filter(q => q.chapter_index === 0);
 
 async function newDevice(browser, errs) {
   const c = await browser.newContext({ viewport: { width: 420, height: 880 } }); const p = await c.newPage();
-  p.on('pageerror', e => errs.push(String(e)));
+  p.on('pageerror', e => errs.push(String(e))); p.on('console', m => { if (/Content Security Policy|Refused/.test(m.text())) errs.push('CSP: ' + m.text().slice(0, 160)); });
   await p.goto(URL); await p.evaluate(() => navigator.serviceWorker.ready); await p.reload(); await p.waitForSelector('#signedout:not([hidden]), #chlist .row');
   return [c, p];
 }

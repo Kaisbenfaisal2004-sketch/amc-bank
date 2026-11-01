@@ -2,7 +2,7 @@ import { createSync } from './sync.js';
 
 const L = ['a', 'b', 'c', 'd', 'e'];
 const $ = id => document.getElementById(id);
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
@@ -178,7 +178,7 @@ function renderQ() {
   if (S.kind === 'review') h += '<span class="tag">Ch ' + (chOf(q) + 1) + ' · Q' + q.n + '</span>';
   if (q.recall > 0) h += '<span class="tag rc">Recall ×' + q.recall + '</span>';
   h += '</div><p class="stem" data-role="stem">' + esc(q.stem) + '</p>';
-  if (q.image) h += '<img class="qimg" src="' + esc(q.image) + '" alt="Image for question ' + q.n + '">';
+  if (q.image && /^data:image\/(jpeg|png|webp);base64,/.test(q.image)) h += '<img class="qimg" src="' + esc(q.image) + '" alt="Image for question ' + q.n + '">';
   h += '<ul class="opts">' + L.map(k => {
     let cls = 'op', mk = '';
     if (p) { if (k === q.answer) { cls += ' right'; mk = k === p ? 'Your answer' : 'Correct'; } else if (k === p) { cls += ' wrong'; mk = 'Your answer'; } else cls += ' dim'; }
@@ -191,7 +191,7 @@ function renderQ() {
       '<p class="rule">' + esc(q.rule) + '</p>' + (q.caution ? '<div class="tip"><b>Exam tip</b> ' + esc(q.caution) + '</div>' : '') + '</div>' +
       '<details class="ev"><summary>Source and evidence</summary><div class="evb"><div class="src">' + esc(q.source) + '</div>' +
       (q.quote ? '<blockquote>' + esc(q.quote) + '</blockquote>' : '') +
-      (q.url ? '<a href="' + esc(q.url) + '" target="_blank" rel="noopener">' + esc(q.url) + '</a>' : '') + '</div></details>';
+      (q.url ? (/^https?:\/\//i.test(q.url) ? '<a href="' + esc(q.url) + '" target="_blank" rel="noopener noreferrer">' + esc(q.url) + '</a>' : '<span>' + esc(q.url) + '</span>') : '') + '</div></details>';
   }
   if (s.a === s.n) {
     h += '<div class="done"><div class="h">' + (S.kind === 'review' ? 'Review complete' : 'Chapter complete') + '</div><div class="big">' + s.r + ' / ' + s.n + '</div><div>' + Math.round(100 * s.r / s.n) + '% correct</div><div class="acts">' +
