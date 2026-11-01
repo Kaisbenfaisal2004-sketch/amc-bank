@@ -29,10 +29,17 @@
         <p class="acc-help">Sign in to keep your answers in step on all your devices.</p>
         <form id="acc-form" class="acc-form" novalidate>
           <input id="acc-email" type="email" autocomplete="username" placeholder="Email" required>
-          <input id="acc-pass" type="password" autocomplete="current-password" placeholder="Password (6+ characters)" required minlength="6">
+          <div class="pw">
+            <input id="acc-pass" type="password" autocomplete="current-password" placeholder="Password (6+ characters)" required minlength="6">
+            <button type="button" class="eye" id="acc-eye" aria-label="Show password" aria-pressed="false">Show</button>
+          </div>
+          <div class="pw" id="acc-pass2-row" hidden>
+            <input id="acc-pass2" type="password" autocomplete="new-password" placeholder="Type the password again">
+          </div>
+          <p class="acc-match" id="acc-match" hidden></p>
           <div class="acc-btns">
-            <button type="submit" class="solid" id="acc-signin">Sign in</button>
-            <button type="button" class="ghost" id="acc-signup">Create account</button>
+            <button type="submit" class="solid" id="acc-submit">Sign in</button>
+            <button type="button" class="link" id="acc-mode">New here? Create account</button>
             <button type="button" class="link" id="acc-reset">Forgot password</button>
           </div>
           <p class="acc-err" id="acc-err" hidden></p>

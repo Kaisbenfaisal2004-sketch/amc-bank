@@ -244,21 +244,46 @@ function errText(e) {
   return 'Could not finish that (' + (c || 'unknown error') + ').';
 }
 function accountUI() {
+  if (user) { $('acc-pass').value = ''; $('acc-pass2').value = ''; setAccMode('in'); }
   $('acc-out').hidden = !sync || !!user;
   $('acc-in').hidden = !user;
   if (user) $('acc-who').textContent = user.email;
   if (!user) setSyncState('local');
 }
+let accMode = 'in'; // 'in' = sign in, 'up' = create account
+function setAccMode(m) {
+  accMode = m; const up = m === 'up';
+  $('acc-pass2-row').hidden = !up; $('acc-pass2').value = ''; $('acc-match').hidden = true; $('acc-err').hidden = true;
+  $('acc-submit').textContent = up ? 'Create account' : 'Sign in';
+  $('acc-mode').textContent = up ? 'Have an account? Sign in' : 'New here? Create account';
+  $('acc-reset').hidden = up;
+  $('acc-pass').setAttribute('autocomplete', up ? 'new-password' : 'current-password');
+}
+function showMatch() {
+  const a = $('acc-pass').value, b = $('acc-pass2').value, m = $('acc-match');
+  $('acc-err').hidden = true;
+  if (accMode !== 'up' || !b) { m.hidden = true; return; }
+  m.hidden = false; const same = a === b;
+  m.className = 'acc-match ' + (same ? 'ok' : 'bad'); m.textContent = same ? 'Passwords match ✓' : 'Passwords do not match';
+}
+$('acc-mode').onclick = () => setAccMode(accMode === 'up' ? 'in' : 'up');
+$('acc-pass').addEventListener('input', showMatch); $('acc-pass2').addEventListener('input', showMatch);
+$('acc-eye').onclick = () => {
+  const show = $('acc-pass').type === 'password';
+  ['acc-pass', 'acc-pass2'].forEach(id => $(id).type = show ? 'text' : 'password');
+  $('acc-eye').textContent = show ? 'Hide' : 'Show';
+  $('acc-eye').setAttribute('aria-pressed', String(show)); $('acc-eye').setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+};
 async function accAction(fn) {
   const email = $('acc-email').value.trim(), pass = $('acc-pass').value, err = $('acc-err');
   err.hidden = true;
   if (!email || pass.length < 6) { err.textContent = 'Enter your email and a password of 6+ characters.'; err.hidden = false; return; }
+  if (accMode === 'up' && pass !== $('acc-pass2').value) { err.textContent = 'The two passwords are not the same. Type them again.'; err.hidden = false; return; }
   document.querySelectorAll('#acc-form button').forEach(b => b.disabled = true);
   try { await fn(email, pass); } catch (e) { err.textContent = errText(e); err.hidden = false; }
   document.querySelectorAll('#acc-form button').forEach(b => b.disabled = false);
 }
-$('acc-form').addEventListener('submit', e => { e.preventDefault(); accAction((a, b) => sync.signIn(a, b)); });
-$('acc-signup').onclick = () => accAction((a, b) => sync.signUp(a, b));
+$('acc-form').addEventListener('submit', e => { e.preventDefault(); accAction((a, b) => accMode === 'up' ? sync.signUp(a, b) : sync.signIn(a, b)); });
 $('acc-reset').onclick = async () => {
   const email = $('acc-email').value.trim(), err = $('acc-err');
   if (!email) { err.textContent = 'Type your email first, then tap Forgot password.'; err.hidden = false; return; }

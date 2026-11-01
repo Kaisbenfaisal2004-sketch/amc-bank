@@ -15,9 +15,12 @@ async function newDevice(browser, errs) {
   await p.goto(URL); await p.evaluate(() => navigator.serviceWorker.ready); await p.reload(); await p.waitForSelector('#banklist li');
   return [c, p];
 }
-async function signIn(p, email, how = '#acc-signin') {
+async function signIn(p, email, how = 'in') {
   await p.waitForSelector('#acc-out:not([hidden])');
-  await p.fill('#acc-email', email); await p.fill('#acc-pass', 'secret1'); await p.click(how); await p.waitForSelector('#acc-in:not([hidden])');
+  if (how === 'up') await p.click('#acc-mode');
+  await p.fill('#acc-email', email); await p.fill('#acc-pass', 'secret1');
+  if (how === 'up') await p.fill('#acc-pass2', 'secret1');
+  await p.click('#acc-submit'); await p.waitForSelector('#acc-in:not([hidden])');
 }
 async function openCh1(p) {
   try { await p.waitForSelector('#banklist .ch', { timeout: 10000 }); } catch (e) { console.log('BANKLIST', await p.innerHTML('#banklist'), await p.isHidden('#home'), await p.isHidden('#contents')); throw e; } await p.click('#banklist .ch');
@@ -33,7 +36,15 @@ const home = async p => { if (!(await p.isHidden('#quiz'))) await p.click('#back
   check('service worker controls page', await A.evaluate(() => !!navigator.serviceWorker.controller));
   check('signed out: no questions shown', (await A.textContent('#banklist')).includes('Sign in'));
   // a stranger cannot add subjects
-  await signIn(A, 'stranger@test.com', '#acc-signup');
+  // password UI: show toggle + confirm field
+  await A.click('#acc-mode'); await A.fill('#acc-email', 'x@test.com'); await A.fill('#acc-pass', 'secret1'); await A.fill('#acc-pass2', 'secret2');
+  check('mismatch shown', (await A.textContent('#acc-match')).includes('do not match'));
+  await A.click('#acc-submit'); check('mismatch blocks sign-up', (await A.textContent('#acc-err')).includes('not the same'));
+  await A.click('#acc-eye'); check('show password works', (await A.getAttribute('#acc-pass', 'type')) === 'text' && (await A.getAttribute('#acc-pass2', 'type')) === 'text');
+  await A.fill('#acc-pass2', 'secret1'); check('match shown', (await A.textContent('#acc-match')).includes('match ✓'));
+  if (shots) await A.screenshot({ path: shots + '/v3_signup.png' });
+  await A.click('#acc-mode');
+  await signIn(A, 'stranger@test.com', 'up');
   await A.setInputFiles('#imp-file', importPath); await A.waitForFunction(() => /not allowed|Could not/.test(document.getElementById('imp-msg').textContent));
   check('stranger cannot import', (await A.textContent('#imp-msg')).includes('not allowed'));
   await A.click('#acc-signout'); await A.waitForSelector('#acc-out:not([hidden])');
@@ -69,7 +80,7 @@ const home = async p => { if (!(await p.isHidden('#quiz'))) await p.click('#back
   // second device
   const [cB, B] = await newDevice(browser, errs);
   await signIn(B, 'kais@test.com'); await sleep(1500);
-  check('B home shows synced count', (await B.textContent('#banklist')).replace(/\s/g, '').includes('11/58'), await B.textContent('#banklist'));
+  check('B home shows synced count', (await B.textContent('#banklist')).replace(/\s/g, '').includes('11/1478'), await B.textContent('#banklist'));
   await openCh1(B); await sleep(800);
   check('B sees all A answers (incl. offline one)', (await mapState(B)) === (await mapState(A)), (await mapState(B)).slice(0, 14));
   await cB.setOffline(true);
