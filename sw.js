@@ -1,6 +1,6 @@
 // Offline copy of the app itself (questions are kept by Firebase on the device, not here). Answers from the stored copy straight away,
 // and refreshes that copy in the background whenever the internet is available.
-const CACHE = 'qbank-v9';
+const CACHE = 'qbank-v10';
 const SHELL = [
   './', 'index.html', 'app.css', 'app.js', 'sync.js', 'config.js', 'vendor/firebase.js', 'manifest.webmanifest',
   'fonts/inter-tight-latin-400-normal.woff2', 'fonts/inter-tight-latin-500-normal.woff2', 'fonts/inter-tight-latin-600-normal.woff2',
@@ -18,7 +18,7 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   e.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k !== CACHE) await caches.delete(k);
+    for (const k of await caches.keys()) if (k.startsWith('qbank-') && k !== CACHE) await caches.delete(k);   // leave the reading app's cache alone
     await self.clients.claim();
   })());
 });

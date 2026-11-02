@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>مكتبة قيس</title>
+<meta name="theme-color" content="#1d4f91">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="مكتبتي">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<main id="home">
+  <header class="top">
+    <h1>مكتبة قيس</h1>
+    <div class="sync" id="sync"><i></i><span>محفوظ على هذا الجهاز</span></div>
+  </header>
+
+  <section class="card goal" aria-label="هدف اليوم">
+    <div class="ring" id="ring">
+      <svg viewBox="0 0 120 120"><circle class="tr" cx="60" cy="60" r="52" fill="none" stroke-width="11"/><circle class="pr" id="ringPr" cx="60" cy="60" r="52" fill="none" stroke-width="11" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/></svg>
+      <div class="lbl"><b class="num" id="ringMin">0</b><span id="ringOf">من 30 دقيقة</span></div>
+    </div>
+    <div class="gtext">
+      <div class="h" id="gH">هدف اليوم: 30 دقيقة قراءة</div>
+      <div class="s" id="gS">افتح رواية والمؤقت يعمل وحده وأنت تقرأ.</div>
+      <div class="streak" id="streak">ابدأ سلسلة أيامك اليوم</div>
+    </div>
+    <div class="week" id="week"></div>
+  </section>
+
+  <section id="signin" class="card signin" hidden>
+    <h2>سجّل الدخول</h2>
+    <p class="tip">استعمل نفس البريد وكلمة المرور التي تدخل بهما إلى تطبيق الأسئلة.</p>
+    <form id="sForm" novalidate>
+      <label for="sEmail">البريد</label>
+      <input id="sEmail" type="email" dir="ltr" autocomplete="username" required>
+      <label for="sPass">كلمة المرور</label>
+      <input id="sPass" type="password" dir="ltr" autocomplete="current-password" required minlength="6">
+      <button type="submit" class="btn wide" id="sBtn">دخول</button>
+      <button type="button" class="link" id="sReset">نسيت كلمة المرور</button>
+      <p class="err" id="sErr" hidden></p>
+    </form>
+  </section>
+
+  <section id="contWrap" hidden>
+    <div class="sec-h"><h2>تابع القراءة</h2></div>
+    <div class="card cont" id="cont"></div>
+  </section>
+
+  <section id="shelfWrap">
+    <div class="sec-h"><h2>الروايات</h2><span id="libCount"></span></div>
+    <div class="shelf" id="shelf"><div class="empty">جارٍ تحميل المكتبة…</div></div>
+  </section>
+
+  <section>
+    <div class="sec-h"><h2>إحصائياتي</h2></div>
+    <div class="stats">
+      <div class="card st"><b class="num" id="stTime">0 د</b><span>إجمالي القراءة</span></div>
+      <div class="card st"><b class="num" id="stDays">0</b><span>أيام قرأت فيها</span></div>
+      <div class="card st"><b class="num" id="stDone">0</b><span>روايات أنهيتها</span></div>
+    </div>
+  </section>
+
+  <section class="card set">
+    <div class="row">
+      <span>هدفي اليومي</span>
+      <div class="step"><button id="gMinus" aria-label="أنقص الهدف">−</button><b class="num" id="gVal">30 د</b><button id="gPlus" aria-label="زد الهدف">+</button></div>
+    </div>
+    <p class="tip">المؤقت يحسب وقتك والرواية مفتوحة أمامك فقط. إذا تركت الهاتف 4 دقائق دون لمس يتوقف وحده، ولا يحسب وقت الغياب.</p>
+    <div id="accIn" hidden>
+      <div class="row acc"><span class="tip">الحساب: <b id="accWho" dir="ltr"></b></span><button class="link" id="sOut">خروج</button></div>
+      <div class="row">
+        <span>إضافة رواية أو تحديثها</span>
+        <label class="btn ghost small" for="impFile">اختر الملف</label>
+        <input type="file" id="impFile" accept=".json,application/json" hidden>
+      </div>
+      <p class="tip" id="impMsg" hidden></p>
+    </div>
+  </section>
+</main>
+
+<div id="reader" hidden>
+  <div class="rbar">
+    <button class="ib" id="rBack" aria-label="رجوع إلى المكتبة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    <div class="rt" id="rTitle"></div>
+    <button class="ib" id="rToc" aria-label="الفصول والكلمات"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></button>
+    <button class="ib" id="rAa" aria-label="شكل القراءة"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19l5-14 5 14M5 14h6"/><path d="M15 19l3.5-9 3.5 9M16.2 16h4.6"/></svg></button>
+    <div class="rprog"><u id="rProg"></u></div>
+  </div>
+  <div id="rscroll"><article id="rtext"></article></div>
+  <div class="timer" id="timer" role="timer">
+    <div class="mr"><svg viewBox="0 0 36 36"><circle class="tr" cx="18" cy="18" r="15" fill="none" stroke-width="4"/><circle class="pr" id="tPr" cx="18" cy="18" r="15" fill="none" stroke-width="4" stroke-linecap="round" stroke-dasharray="94.25" stroke-dashoffset="94.25"/></svg></div>
+    <div dir="ltr"><b class="num" id="tTime">0:00</b> <span class="st2" id="tSub">/ 30:00</span></div>
+    <button class="pp" id="tPP" aria-label="إيقاف المؤقت مؤقتًا"></button>
+  </div>
+</div>
+
+<div id="scrim" class="scrim" hidden></div>
+<div id="sheet" class="sheet" hidden role="dialog" aria-modal="true"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

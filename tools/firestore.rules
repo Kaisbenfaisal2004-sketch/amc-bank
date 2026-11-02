@@ -16,6 +16,21 @@ service cloud.firestore {
     match /banks/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == 'VBdzQU3iKcSTV3XRRMUZGNqU0Fg1';
     }
+    // Reading app (library/): reading progress, goal and settings — one document, owner only.
+    match /users/{uid}/reading/{docId} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null && request.auth.uid == uid
+        && uid == 'VBdzQU3iKcSTV3XRRMUZGNqU0Fg1'
+        && docId == 'state'
+        && request.resource.data.keys().hasOnly(['v', 'goal', 'goalAt', 'days', 'books', 'prefs', 'prefsAt'])
+        && request.resource.data.days is map
+        && request.resource.data.books is map
+        && request.resource.data.days.size() <= 4000;
+    }
+    // Reading app books (text and pictures): only the owner account.
+    match /library/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == 'VBdzQU3iKcSTV3XRRMUZGNqU0Fg1';
+    }
     // Everything else: denied (Firestore default).
   }
 }
