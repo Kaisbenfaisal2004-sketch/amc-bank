@@ -68,13 +68,17 @@ async function start() {
     user = u;
     if (!u) { showSignedOut(); return; }
     $('signin').hidden = true; $('accIn').hidden = false; $('accWho').textContent = u.email || '';
-    firstServer = false;
-    store.watchState((data, meta) => {
-      if (meta.error) { setSync('local'); return; }
-      if (data) { merge(data); saveLocal(); renderHome(); }
-      if (!meta.fromCache) { setSync(meta.pending ? 'wait' : 'on'); if (!firstServer) { firstServer = true; push(); } }
-    });
+    watchState();
     await refreshLibrary();
+  });
+}
+let stateErr = false;
+function watchState() {
+  firstServer = false; stateErr = false;
+  store.watchState((data, meta) => {
+    if (meta.error) { stateErr = true; setSync('local'); return; }
+    if (data) { merge(data); saveLocal(); renderHome(); }
+    if (!meta.fromCache) { setSync(meta.pending ? 'wait' : 'on'); if (!firstServer) { firstServer = true; push(); } }
   });
 }
 function showSignedOut(msg) {
@@ -118,7 +122,13 @@ async function refreshLibrary() {
     LIB = list.map(({ cover, ...m }) => Object.assign(m, { cover }));
     lsSet(LS_LIB, LIB);
   } catch (e) {
-    if (!LIB) { $('shelf').innerHTML = '<div class="empty">تعذّر تحميل المكتبة. افتح التطبيق وأنت متصل بالإنترنت مرة واحدة.</div>'; return; }
+    const deniedErr = e && /permission-denied/.test(e.code || '');
+    if (!LIB) {
+      $('shelf').innerHTML = '<div class="empty">' + (deniedErr
+        ? 'رفض Firebase فتح المكتبة، لأن قواعد Firestore لم تُحدَّث بعد. الصق القواعد الجديدة في Firebase واضغط Publish، ثم ارجع إلى هنا.'
+        : 'تعذّر تحميل المكتبة. افتح التطبيق وأنت متصل بالإنترنت مرة واحدة.') + '</div>';
+      return;
+    }
   }
   renderHome();
   if (S.ui.open && LIB.some(b => b.id === S.ui.open) && !readerBook) openBook(S.ui.open);
@@ -358,7 +368,7 @@ $('tPP').addEventListener('click', e => {
 document.addEventListener('visibilitychange', () => {
   lastTick = Date.now();
   if (document.hidden) { savePos(); saveLocal(true); push(); }
-  else { lastAct = Date.now(); renderGoal(); if (readerBook) askWake(); }
+  else { lastAct = Date.now(); renderGoal(); if (readerBook) askWake(); if (user && !LIB) refreshLibrary(); if (user && stateErr) watchState(); }
 });
 window.addEventListener('pagehide', () => { savePos(); saveLocal(true); });
 async function askWake() { try { if (navigator.wakeLock && !wake) { wake = await navigator.wakeLock.request('screen'); wake.addEventListener('release', () => { wake = null; }); } } catch (e) { wake = null; } }
