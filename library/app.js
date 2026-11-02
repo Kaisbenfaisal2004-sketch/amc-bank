@@ -231,23 +231,34 @@ $('impFile').addEventListener('change', async e => {
 document.addEventListener('paste', e => {
   if (!user || readerBook) return;
   const t = e.clipboardData && e.clipboardData.getData('text');
-  if (!t || t.charAt(0) !== '{' || t.indexOf('"kais-library-book"') < 0) return;
+  if (!t || t.charAt(0) !== '{' || t.indexOf('"kais-library-') < 0) return;
   e.preventDefault(); importText(t);
 });
 async function importText(text) {
   const msg = $('impMsg'); msg.hidden = false;
   const say = t => { msg.textContent = t; };
   if (!navigator.onLine) { say('الإضافة تحتاج إنترنت. جرّب حين يعود الاتصال.'); return; }
-  let b;
-  try { b = JSON.parse(text); } catch (x) { say('هذا الملف ليس ملف رواية صالحًا.'); return; }
-  if (!b || b.type !== 'kais-library-book' || !b.id || !b.meta || !Array.isArray(b.parts)) { say('هذا الملف ليس ملف رواية صالحًا.'); return; }
-  try {
-    say('جارٍ رفع «' + b.meta.title + '»…');
-    await store.importBook(b, step => say('جارٍ رفع «' + b.meta.title + '»: ' + step));
-    const ver = lsGet(LS_VER, {}); delete ver[b.id]; lsSet(LS_VER, ver); delete BOOKS[b.id];
-    say('أُضيفت «' + b.meta.title + '» إلى مكتبتك.');
-    await refreshLibrary();
-  } catch (x) { say('تعذّر الرفع (' + ((x && x.code) || 'خطأ') + '). تأكد أنك داخل بحسابك وأن الاتصال جيد، ثم أعد المحاولة.'); }
+  let data;
+  try { data = JSON.parse(text); } catch (x) { say('هذا الملف ليس ملف رواية صالحًا.'); return; }
+  // one book, or a bundle of several books
+  const books = data && data.type === 'kais-library-bundle' && Array.isArray(data.books) ? data.books : [data];
+  const ok = b => b && b.type === 'kais-library-book' && b.id && b.meta && Array.isArray(b.parts);
+  if (!books.length || !books.every(ok)) { say('هذا الملف ليس ملف رواية صالحًا.'); return; }
+  const done = [];
+  for (let i = 0; i < books.length; i++) {
+    const b = books[i], pre = books.length > 1 ? '(' + (i + 1) + '/' + books.length + ') ' : '';
+    try {
+      say(pre + 'جارٍ رفع «' + b.meta.title + '»…');
+      await store.importBook(b, step => say(pre + 'جارٍ رفع «' + b.meta.title + '»: ' + step));
+      const ver = lsGet(LS_VER, {}); delete ver[b.id]; lsSet(LS_VER, ver); delete BOOKS[b.id];
+      done.push(b.meta.title);
+    } catch (x) {
+      say(pre + 'تعذّر رفع «' + b.meta.title + '» (' + ((x && x.code) || 'خطأ') + '). أُضيف قبلها ' + done.length + '. أعد المحاولة والاتصال جيد.');
+      await refreshLibrary(); return;
+    }
+  }
+  const n = done.length; say(books.length > 1 ? (n === 2 ? 'أُضيفت روايتان إلى مكتبتك.' : 'أُضيفت ' + n + (n <= 10 ? ' روايات' : ' رواية') + ' إلى مكتبتك.') : 'أُضيفت «' + done[0] + '» إلى مكتبتك.');
+  await refreshLibrary();
 }
 
 /* ---------- reader ---------- */
