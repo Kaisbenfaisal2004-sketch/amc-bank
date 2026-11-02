@@ -176,7 +176,7 @@ function renderGoal() {
   $('ringOf').textContent = 'من ' + S.goal + ' دقيقة';
   const left = Math.max(0, Math.ceil((goal - secs) / 60));
   $('gH').textContent = done ? 'أتممت هدف اليوم' : secs > 0 ? 'باقي ' + left + ' دقيقة لهدف اليوم' : 'هدف اليوم: ' + S.goal + ' دقيقة قراءة';
-  $('gS').textContent = done ? 'أحسنت. كل دقيقة إضافية تُحسب لك أيضًا.' : 'افتح رواية والمؤقت يعمل وحده وأنت تقرأ.';
+  $('gS').textContent = done ? 'أحسنت. كل دقيقة إضافية تُحسب لك أيضًا.' : 'افتح رواية واضغط زر المؤقت لتبدأ.';
   const st = streak();
   $('streak').textContent = st ? 'سلسلة الأيام: ' + st + (st === 1 ? ' يوم' : st <= 10 ? ' أيام' : ' يومًا') : 'ابدأ سلسلة أيامك اليوم';
   const wk = $('week'); wk.innerHTML = '';
@@ -251,7 +251,7 @@ async function importText(text) {
 }
 
 /* ---------- reader ---------- */
-let readerBook = null, curCh = 0, blocksEls = [], paused = false, idlePaused = false, lastAct = Date.now(), lastTick = Date.now(), sinceSync = 0, wake = null;
+let readerBook = null, curCh = 0, blocksEls = [], paused = true, started = false, idlePaused = false, lastAct = Date.now(), lastTick = Date.now(), sinceSync = 0, wake = null;
 function applyPrefs() {
   const r = $('reader'), t = $('rtext');
   if (S.prefs.rt === 'auto') r.removeAttribute('data-rt'); else r.setAttribute('data-rt', S.prefs.rt);
@@ -266,7 +266,7 @@ async function openBook(id) {
   const st = bookState(id); if (!st.last) st.last = Date.now();
   S.ui.open = id; saveLocal(true);
   $('reader').hidden = false; document.body.style.overflow = 'hidden';
-  applyPrefs(); paused = false; idlePaused = false; lastAct = Date.now(); lastTick = Date.now();
+  applyPrefs(); paused = true; started = false; idlePaused = false; lastAct = Date.now(); lastTick = Date.now();
   renderChapter(st.finished ? 0 : Math.min(st.ch, b.chapters.length - 1), st.finished ? 0 : st.blk);
   updateTimer(); askWake();
 }
@@ -335,7 +335,7 @@ $('rscroll').addEventListener('scroll', () => {
   scrollRaf = requestAnimationFrame(() => { scrollRaf = 0; updateProg(); clearTimeout(posT); posT = setTimeout(() => { savePos(); schedulePush(8000); }, 600); });
 }, { passive: true });
 ['touchstart', 'pointerdown', 'keydown'].forEach(ev => $('reader').addEventListener(ev, activity, { passive: true }));
-function activity() { lastAct = Date.now(); if (idlePaused) { idlePaused = false; lastTick = Date.now(); updateTimer(); } }
+function activity() { lastAct = Date.now(); if (idlePaused && !paused) { idlePaused = false; lastTick = Date.now(); updateTimer(); } }
 $('rBack').addEventListener('click', closeReader);
 $('rtext').addEventListener('click', e => { const g = e.target.closest('.gl'); if (g) showWord(g.dataset.g); });
 
@@ -366,11 +366,12 @@ function updateTimer() {
   $('tPP').innerHTML = isP ? ICON_PLAY : ICON_PAUSE;
   $('tPP').setAttribute('aria-label', isP ? 'استئناف المؤقت' : 'إيقاف المؤقت مؤقتًا');
   if (idlePaused) $('tSub').textContent = 'متوقف · المس للمتابعة';
+  else if (paused && !started) $('tSub').textContent = 'اضغط للبدء';
   else if (paused) $('tSub').textContent = 'متوقف';
 }
 $('tPP').addEventListener('click', e => {
   e.stopPropagation();
-  if (paused || idlePaused) { paused = false; idlePaused = false; lastAct = Date.now(); lastTick = Date.now(); }
+  if (paused || idlePaused) { paused = false; started = true; idlePaused = false; lastAct = Date.now(); lastTick = Date.now(); }
   else { paused = true; saveLocal(true); push(); }
   updateTimer();
 });
