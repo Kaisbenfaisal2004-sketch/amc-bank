@@ -1,6 +1,6 @@
 // Offline copy of the reading app itself (the books are kept by Firebase on the device, not here).
 // Answers from the stored copy straight away, and refreshes it in the background when online.
-const CACHE = 'library-v2';
+const CACHE = 'library-v3';
 const SHELL = [
   './', 'index.html', 'app.css', 'app.js', 'store.js', '../config.js', '../vendor/firebase.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',

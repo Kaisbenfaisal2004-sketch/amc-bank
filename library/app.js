@@ -225,12 +225,21 @@ $('gPlus').addEventListener('click', () => setGoal(5));
 /* ---------- import a book file ---------- */
 $('impFile').addEventListener('change', async e => {
   const f = e.target.files && e.target.files[0]; e.target.value = '';
-  if (!f) return;
+  if (f) importText(await f.text());
+});
+// a book file's text pasted anywhere in the app (e.g. copied on a computer) imports it too
+document.addEventListener('paste', e => {
+  if (!user || readerBook) return;
+  const t = e.clipboardData && e.clipboardData.getData('text');
+  if (!t || t.charAt(0) !== '{' || t.indexOf('"kais-library-book"') < 0) return;
+  e.preventDefault(); importText(t);
+});
+async function importText(text) {
   const msg = $('impMsg'); msg.hidden = false;
   const say = t => { msg.textContent = t; };
   if (!navigator.onLine) { say('الإضافة تحتاج إنترنت. جرّب حين يعود الاتصال.'); return; }
   let b;
-  try { b = JSON.parse(await f.text()); } catch (x) { say('هذا الملف ليس ملف رواية صالحًا.'); return; }
+  try { b = JSON.parse(text); } catch (x) { say('هذا الملف ليس ملف رواية صالحًا.'); return; }
   if (!b || b.type !== 'kais-library-book' || !b.id || !b.meta || !Array.isArray(b.parts)) { say('هذا الملف ليس ملف رواية صالحًا.'); return; }
   try {
     say('جارٍ رفع «' + b.meta.title + '»…');
@@ -239,7 +248,7 @@ $('impFile').addEventListener('change', async e => {
     say('أُضيفت «' + b.meta.title + '» إلى مكتبتك.');
     await refreshLibrary();
   } catch (x) { say('تعذّر الرفع (' + ((x && x.code) || 'خطأ') + '). تأكد أنك داخل بحسابك وأن الاتصال جيد، ثم أعد المحاولة.'); }
-});
+}
 
 /* ---------- reader ---------- */
 let readerBook = null, curCh = 0, blocksEls = [], paused = false, idlePaused = false, lastAct = Date.now(), lastTick = Date.now(), sinceSync = 0, wake = null;
