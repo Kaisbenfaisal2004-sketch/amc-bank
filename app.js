@@ -59,9 +59,42 @@ function setSyncState(s) {
 window.addEventListener('online', () => syncState !== 'local' && setSyncState('pending'));
 window.addEventListener('offline', () => syncState !== 'local' && setSyncState('offline'));
 
+/* ---------- motion ---------- */
+const REDUCE = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+function replay(el, cls) { if (!el || REDUCE) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+function countTo(el, to, suffix) {
+  suffix = suffix || ''; el.dataset.v = to + suffix;
+  const from = parseInt(el.textContent, 10);
+  if (REDUCE || isNaN(from) || from === to) { el.textContent = to + suffix; return; }
+  const t0 = performance.now(), d = 650;
+  const step = t => { const k = Math.min(1, (t - t0) / d), e = 1 - Math.pow(1 - k, 3);
+    if (el.dataset.v !== to + suffix) return;
+    el.textContent = Math.round(from + (to - from) * e) + suffix; if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
+function confetti() {
+  if (REDUCE) return;
+  const cv = document.createElement('canvas'); cv.className = 'confetti'; document.body.appendChild(cv);
+  const W = cv.width = innerWidth * devicePixelRatio, H = cv.height = innerHeight * devicePixelRatio, ctx = cv.getContext('2d');
+  const cols = ['#1E3A8A', '#16A34A', '#F59E0B', '#3B82F6', '#DC2626'];
+  const ps = Array.from({ length: 90 }, () => ({ x: W / 2 + (Math.random() - .5) * W * .3, y: H * .35, vx: (Math.random() - .5) * 14 * devicePixelRatio,
+    vy: (-Math.random() * 14 - 6) * devicePixelRatio, r: (4 + Math.random() * 5) * devicePixelRatio, a: Math.random() * 6, va: (Math.random() - .5) * .3, c: cols[Math.random() * 5 | 0] }));
+  const t0 = performance.now();
+  const frame = t => {
+    ctx.clearRect(0, 0, W, H); const k = (t - t0) / 1600;
+    ps.forEach(p => { p.vy += .45 * devicePixelRatio; p.x += p.vx; p.y += p.vy; p.a += p.va; ctx.save(); ctx.globalAlpha = Math.max(0, 1 - k); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); ctx.restore(); });
+    if (k < 1) requestAnimationFrame(frame); else cv.remove();
+  };
+  requestAnimationFrame(frame);
+}
+let animHome = true;   // animate bars/rows the next time home is drawn
+
 /* ---------- screens + tab bar ---------- */
 function show(id) {
+  const was = ['home', 'account', 'quiz'].find(s => !$(s).hidden);
   ['home', 'account', 'quiz'].forEach(s => $(s).hidden = s !== id);
+  if (was !== id) { replay($(id), 'enter'); if (id === 'home') { animHome = true; renderHome(); } }
   $('tabbar').hidden = id === 'quiz';
   document.querySelectorAll('.tabbar button').forEach(b => b.classList.toggle('on', b.dataset.t === (id === 'home' && filter === 'wrong' ? 'wrong' : id)));
   window.scrollTo(0, 0);
@@ -98,7 +131,7 @@ function renderHome() {
   $('banktitle').textContent = bank ? bank.title : 'Question Bank';
   const qs = allQs(); let a = 0, r = 0;
   qs.forEach(q => { const x = saved(q); if (x) { a++; if (x === q.answer) r++; } });
-  $('k-ans').textContent = a; $('k-pct').textContent = a ? Math.round(100 * r / a) + '%' : '—'; $('k-left').textContent = qs.length - a;
+  countTo($('k-ans'), a); if (a) countTo($('k-pct'), Math.round(100 * r / a), '%'); else { $('k-pct').textContent = '—'; $('k-pct').dataset.v = '—'; } countTo($('k-left'), qs.length - a);
   const w = a - r; $('wrongcount').textContent = w ? '(' + w + ')' : '';
   if (out || !bank) { $('chlist').innerHTML = ''; $('wrongview').hidden = true; $('lede').textContent = ''; $('loading').hidden = out || !!bank || !BANKS.length;
     if (!out && user && !BANKS.length) { $('loading').hidden = false; $('loadmsg').textContent = 'No subjects yet. Add one from the Account tab.'; }
@@ -116,7 +149,12 @@ function renderHome() {
         '<span class="seg"><i class="g" data-w="' + (s.n ? 100 * s.r / s.n : 0) + '"></i><i class="r" data-w="' + (s.n ? 100 * (s.a - s.r) / s.n : 0) + '"></i></span></span>' +
         '<span class="s ' + cls + '">' + (pct === null ? '—' : pct + '%') + '</span></button></li>';
     }).join('');
-    document.querySelectorAll('#chlist [data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; });
+    const bars = document.querySelectorAll('#chlist [data-w]');
+    if (animHome && !REDUCE) {
+      document.querySelectorAll('#chlist li').forEach((li, i) => { li.style.animationDelay = Math.min(i, 14) * 28 + 'ms'; li.classList.add('rise'); });
+      requestAnimationFrame(() => requestAnimationFrame(() => bars.forEach(el => { el.style.width = el.dataset.w + '%'; })));
+    } else bars.forEach(el => { el.classList.add('now'); el.style.width = el.dataset.w + '%'; });
+    animHome = false;
     $('lede').textContent = bank.chapters.length + ' chapters · ' + bank.chapters.reduce((t, c) => t + (Number(c.count) || 0), 0) + ' questions' + (bank.pilot ? ' · pilot: chapter 1 only' : '');
   } else {
     const wq = wrongQs();
@@ -223,13 +261,31 @@ function answer(k) {
   const q = S.items[qi]; if (pick(q)) return;
   if (S.kind === 'review') S.rev[q.id] = k; else setAnswer([q.id], k);
   renderQ();
+  const ok = k === q.answer;
+  replay(document.querySelector('.op[data-k="' + k + '"]'), ok ? 'yes' : 'no');
+  if (!ok) replay(document.querySelector('.op.right'), 'yes');
+  replay(document.querySelector('.exp'), 'reveal'); replay(document.querySelector('details.ev'), 'reveal');
+  replay(document.querySelector('#dots .cur'), 'blip');
+  buzz(ok ? 12 : [30, 50, 30]);
+  const s = sessStats();
+  if (s.a === s.n) {
+    const big = document.querySelector('.done .big'); if (big) { big.textContent = '0 / ' + s.n; countUpScore(big, s.r, s.n); }
+    replay(document.querySelector('.done'), 'reveal');
+    if (s.r / s.n >= .8) setTimeout(confetti, 250);
+  }
 }
-function go(i) { if (!S || i < 0 || i >= S.items.length) return; qi = i; renderQ(); window.scrollTo(0, 0); }
+function countUpScore(el, r, n) {
+  if (REDUCE) { el.textContent = r + ' / ' + n; return; }
+  const t0 = performance.now(), d = 900;
+  const step = t => { const k = Math.min(1, (t - t0) / d), e = 1 - Math.pow(1 - k, 3); el.textContent = Math.round(r * e) + ' / ' + n; if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function go(i) { if (!S || i < 0 || i >= S.items.length || i === qi) return; const dir = i > qi ? 'in-r' : 'in-l'; qi = i; renderQ(); replay($('qbox'), dir); window.scrollTo(0, 0); }
 $('prev').onclick = () => go(qi - 1); $('next').onclick = () => go(qi + 1);
 $('copy').onclick = () => S && doCopy(S.items[qi]);
 
 let tt;
-function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2200); }
+function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; replay(t, 'pop'); clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2200); }
 function doCopy(q) {
   const txt = copyText(q);
   const fallback = () => {

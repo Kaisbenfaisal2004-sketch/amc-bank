@@ -153,3 +153,45 @@ details.ev[open] summary{border-bottom:1px solid var(--line)}
 .toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 18px;border-radius:99px;font-size:.92rem;font-weight:600;z-index:40;max-width:calc(100% - 32px);text-align:center}
 @media (max-width:520px){ .keys{display:none} .stem{font-size:1.08rem} .top h1{font-size:1.45rem} }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- motion (all of it switched off for reduced-motion users) ---------- */
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes inR{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes inL{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+@keyframes yes{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(22,163,74,.45)}35%{transform:scale(1.025)}100%{transform:scale(1);box-shadow:0 0 0 14px rgba(22,163,74,0)}}
+@keyframes no{0%,100%{transform:translateX(0)}18%{transform:translateX(-7px)}36%{transform:translateX(6px)}54%{transform:translateX(-4px)}72%{transform:translateX(3px)}}
+@keyframes reveal{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes blip{0%{transform:scaleY(1)}40%{transform:scaleY(2.1)}100%{transform:scaleY(1.4)}}
+@keyframes pop{from{opacity:0;transform:translate(-50%,10px) scale(.96)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes breathe{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes tick{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.screen.enter{animation:enter .32s cubic-bezier(.2,.8,.2,1)}
+.tbl li.rise{animation:rise .42s cubic-bezier(.2,.8,.2,1) both}
+.seg i{width:0;transition:width .9s cubic-bezier(.2,.8,.2,1) .15s}
+.seg i.now{transition:width .35s ease}
+#qbox.in-r{animation:inR .28s cubic-bezier(.2,.8,.2,1)}
+#qbox.in-l{animation:inL .28s cubic-bezier(.2,.8,.2,1)}
+.op{transition:transform .12s ease,background-color .25s ease,border-color .25s ease,opacity .25s ease}
+.op:active:not(:disabled){transform:scale(.985)}
+.op .lt{transition:background-color .25s ease,border-color .25s ease,color .25s ease}
+.op.yes{animation:yes .6s cubic-bezier(.2,.8,.2,1)}
+.op.no{animation:no .42s ease}
+.op.right.yes .lt,.op.wrong.no .lt{animation:tick .35s cubic-bezier(.2,.8,.2,1)}
+.exp.reveal{animation:reveal .4s cubic-bezier(.2,.8,.2,1) .12s both}
+details.ev.reveal{animation:reveal .4s cubic-bezier(.2,.8,.2,1) .22s both}
+.done.reveal{animation:reveal .45s cubic-bezier(.2,.8,.2,1) .3s both}
+.dots button{transition:background-color .3s ease,transform .25s ease}
+.dots button.cur{transform:scaleY(1.4)}
+.dots button.blip{animation:blip .45s ease forwards}
+.btn,.pill,.row,.qback,.qcopy{transition:transform .12s ease,background-color .2s ease,border-color .2s ease,color .2s ease}
+.btn:active:not(:disabled),.pill:active,.qback:active,.qcopy:active{transform:scale(.97)}
+.row:active:not(:disabled){transform:scale(.995)}
+.tabbar button{transition:color .2s ease}
+.tabbar button svg{transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.tabbar button.on svg{transform:translateY(-2px) scale(1.08)}
+.toast.pop{animation:pop .25s cubic-bezier(.2,.8,.2,1)}
+#loading p{animation:breathe 1.4s ease-in-out infinite}
+.kpi b{font-variant-numeric:tabular-nums}
+.confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}

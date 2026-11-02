@@ -83,7 +83,7 @@ const home = async p => { if (!(await p.isHidden('#quiz'))) await p.click('#back
   // second device
   const [cB, B] = await newDevice(browser, errs);
   await signIn(B, 'kais@test.com'); await sleep(1500);
-  await home(B); check('B home shows synced count', (await B.textContent('#k-ans')) === '11', await B.textContent('#k-ans'));
+  await home(B); await sleep(900); check('B home shows synced count', (await B.textContent('#k-ans')) === '11', await B.textContent('#k-ans'));
   await openCh1(B); await sleep(800);
   check('B sees all A answers (incl. offline one)', (await mapState(B)) === (await mapState(A)), (await mapState(B)).slice(0, 14));
   await cB.setOffline(true);
