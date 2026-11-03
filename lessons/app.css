@@ -8,7 +8,7 @@
 html{-webkit-text-size-adjust:100%}
 body{margin:0}
 [hidden]{display:none!important}
-/* Layout: one-column home (continue card, lessons grouped by subject, account) and a full-screen lesson frame on top. */
+/* Layout: one-column home (continue card, lessons grouped by subject, account) each lesson opens as its own page (lesson.html). */
 :root{
   --bg:#fbfaf7; --surface:#ffffff; --sunk:#f1f0ec; --fg:#1d1d1f; --muted:#5f6368; --line:#e3e0d8;
   --accent:#8a3b5c; --accent-soft:#f6e9ef; --accent-fg:#fff; --good:#2e7d4f;
@@ -58,7 +58,5 @@ h3.subj{font-size:1.05rem;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px
 .set .row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .set .apps{justify-content:flex-start}
 
-#reader{position:fixed;inset:0;z-index:20;background:var(--bg)}
-#rFrame{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
-.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.loading{position:fixed;inset:0;padding:20px;text-align:center;line-height:2;display:flex;align-items:center;justify-content:center;color:var(--muted)}
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:.9rem;z-index:40;max-width:90vw}

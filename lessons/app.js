@@ -27,14 +27,13 @@ function setSync(mode) {
   el.classList.toggle('on', mode === 'on');
   el.querySelector('span').textContent = mode === 'on' ? 'محفوظ في حسابك' : mode === 'wait' ? 'سيُرفع حين يعود الإنترنت' : 'محفوظ على هذا الجهاز';
 }
-// each lesson's progress travels as one unit: the newer copy wins (the lesson open on screen keeps its own copy)
+// each lesson's progress travels as one unit: the newer copy wins
 function merge(r) {
   if (!r || typeof r !== 'object') return false;
   let changed = false;
   for (const [id, it] of Object.entries(r.items || {})) {
     if (!it || typeof it !== 'object') continue;
     const mine = S.items[id];
-    if (openId === id && mine) continue;
     if (!mine || (it.at || 0) > (mine.at || 0)) { S.items[id] = Object.assign({ done: {} }, it); changed = true; }
   }
   return changed;
@@ -118,7 +117,6 @@ async function refreshList() {
     }
   }
   renderHome();
-  if (S.ui.open && LIST.some(l => l.id === S.ui.open) && !openId) openLesson(S.ui.open);
   prefetch();
 }
 // keep every lesson on the device, so it opens without internet later
@@ -206,88 +204,14 @@ async function importText(text) {
 }
 
 /* ---------- open a lesson ---------- */
-let openId = null, frameDoc = null, posT = 0;
-async function getPage(id) {
-  if (PAGES[id]) return PAGES[id];
-  const meta = LIST.find(l => l.id === id);
-  const ver = lsGet(LS_VER, {}), cached = ver[id] === meta.version;
-  let html = await store.loadParts(meta, cached);
-  const imgs = await store.loadImages(meta, cached);
-  if (!cached && navigator.onLine) { ver[id] = meta.version; lsSet(LS_VER, ver); }
-  html = html.replace(/lesson-img:([A-Za-z0-9_-]+)/g, (m, n) => imgs[n] || '');
-  return PAGES[id] = html;
+// each lesson opens as a full page of its own (lesson.html), so its contents menu and links behave normally on phones
+function openLesson(id) {
+  if (!LIST || !LIST.some(l => l.id === id)) return;
+  saveLocal(true); push();
+  location.href = 'lesson.html?id=' + encodeURIComponent(id);
 }
-function fontCss() {
-  const f = n => new URL('../library/fonts/ibm-plex-sans-arabic-' + n + '.woff2', location.href).href;
-  const ar = 'unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC';
-  return '<style>' +
-    '@font-face{font-family:"Plex Arabic";src:url(' + f('arabic-400-normal') + ') format("woff2");font-weight:400;' + ar + '}' +
-    '@font-face{font-family:"Plex Arabic";src:url(' + f('arabic-600-normal') + ') format("woff2");font-weight:500 600;' + ar + '}' +
-    '@font-face{font-family:"Plex Arabic";src:url(' + f('arabic-700-normal') + ') format("woff2");font-weight:700;' + ar + '}' +
-    'body{font-family:"Plex Arabic","Geeza Pro","Noto Naskh Arabic",serif}' +
-    '#kBack{font:inherit;font-size:.75em;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:4px 12px;cursor:pointer}' +
-    'header.top{padding-top:calc(8px + env(safe-area-inset-top,0px))}' +
-    '@media (max-width:560px){header.top .title{display:none}header.top{gap:6px;padding-left:10px;padding-right:10px}header.top button,#kBack{padding:4px 9px}}' +
-    '</style>';
-}
-async function openLesson(id) {
-  const meta = LIST && LIST.find(l => l.id === id); if (!meta) return;
-  openId = id; S.ui.open = id; saveLocal(true);
-  $('reader').hidden = false; $('home').hidden = true; $('rLoad').hidden = false; $('rLoad').textContent = 'جارٍ فتح الشرح…';
-  history.pushState({ lesson: id }, '');
-  let html;
-  try { html = await getPage(id); }
-  catch (e) {
-    $('rLoad').textContent = navigator.onLine ? 'تعذّر فتح الشرح. أعد المحاولة بعد قليل.' : 'هذا الشرح لم يُحفظ على هذا الجهاز بعد. افتحه مرة وأنت متصل بالإنترنت.';
-    setTimeout(closeLesson, 3500); return;
-  }
-  if (openId !== id) return;
-  const fr = $('rFrame');
-  fr.onload = () => wire(id, meta);
-  fr.srcdoc = html.replace('</head>', fontCss() + '</head>');
-}
-function wire(id, meta) {
-  const d = $('rFrame').contentDocument; if (!d || openId !== id) return;
-  frameDoc = d; $('rLoad').hidden = true;
-  const it = item(id);
-  // a "back" button inside the lesson's own top bar
-  const bar = d.querySelector('header.top');
-  if (bar && !d.getElementById('kBack')) {
-    const b = d.createElement('button'); b.id = 'kBack'; b.textContent = '→ الشروح'; b.setAttribute('aria-label', 'رجوع إلى قائمة الشروح');
-    b.addEventListener('click', () => history.back());
-    bar.insertBefore(b, bar.firstChild);
-  }
-  // section ticks: the account's copy decides; changes go to the account
-  const boxes = Array.from(d.querySelectorAll('.done input[data-sec]'));
-  it.total = boxes.length;
-  const markToc = cb => { const a = d.querySelector('#toc a[data-id="' + cb.dataset.sec + '"]'); if (a) a.classList.toggle('ok', cb.checked); };
-  boxes.forEach(cb => {
-    cb.checked = !!it.done[cb.dataset.sec]; markToc(cb);
-    cb.addEventListener('change', () => {
-      if (cb.checked) it.done[cb.dataset.sec] = true; else delete it.done[cb.dataset.sec];
-      it.at = Date.now(); markToc(cb); saveLocal(); schedulePush(800);
-    });
-  });
-  it.last = Date.now(); it.at = Date.now(); saveLocal(); schedulePush();
-  // reading place
-  const w = $('rFrame').contentWindow, h = () => d.documentElement.scrollHeight - w.innerHeight;
-  // the page settles over a moment (font, pictures), so the place is put back a few times unless you start moving first
-  let moved = false; const stop = () => { moved = true; };
-  ['wheel', 'touchstart', 'keydown', 'mousedown'].forEach(ev => w.addEventListener(ev, stop, { passive: true, once: true }));
-  const target = it.pos;
-  if (target > 0) [60, 350, 900, 1800].forEach(ms => setTimeout(() => { if (!moved && openId === id) w.scrollTo(0, target * h()); }, ms));
-  w.addEventListener('scroll', () => {
-    clearTimeout(posT);
-    posT = setTimeout(() => { const H = h(); if (H > 0 && openId === id) { it.pos = +(w.scrollY / H).toFixed(4); it.at = Date.now(); saveLocal(); schedulePush(4000); } }, 400);
-  }, { passive: true });
-}
-function closeLesson() {
-  if (!openId) return;
-  openId = null; frameDoc = null; S.ui.open = null; saveLocal(true); push();
-  const fr = $('rFrame'); fr.onload = null; fr.removeAttribute('srcdoc'); fr.src = 'about:blank';
-  $('reader').hidden = true; $('home').hidden = false; renderHome();
-}
-window.addEventListener('popstate', () => { if (openId) closeLesson(); });
+// coming back from a lesson: pick up the progress it saved on this device
+window.addEventListener('pageshow', () => { const r = lsGet(LS_STATE, null); if (r && r.items && merge(r)) renderHome(); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { saveLocal(true); push(); } });
 
 start();

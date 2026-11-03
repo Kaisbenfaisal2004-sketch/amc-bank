@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>شروح قيس</title>
 <meta name="theme-color" content="#8a3b5c">
-<!-- Lessons are full pages with their own small scripts, shown inside a frame built from the private copy in Firebase;
-     so inline scripts are allowed here, but the page still cannot talk to any server except Firebase. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src 'self' about:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="الشروح">
@@ -65,11 +63,6 @@
     </div>
   </section>
 </main>
-
-<div id="reader" hidden>
-  <div class="loading" id="rLoad">جارٍ فتح الشرح…</div>
-  <iframe id="rFrame" title="الشرح"></iframe>
-</div>
 
 <div id="toast" class="toast" hidden></div>
 

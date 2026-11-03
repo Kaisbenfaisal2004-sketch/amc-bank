@@ -1,8 +1,8 @@
 // Offline copy of the lessons app itself (the lessons are kept by Firebase on the device, not here).
 // Answers from the stored copy straight away, and refreshes it in the background when online.
-const CACHE = 'lessons-v1';
+const CACHE = 'lessons-v2';
 const SHELL = [
-  './', 'index.html', 'app.css', 'app.js', 'store.js', '../config.js', '../vendor/firebase.js', 'manifest.webmanifest',
+  './', 'index.html', 'lesson.html', 'app.css', 'app.js', 'lesson.js', 'store.js', '../config.js', '../vendor/firebase.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
   '../library/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2','../library/fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2','../library/fonts/ibm-plex-sans-arabic-arabic-700-normal.woff2',
   '../library/fonts/ibm-plex-sans-arabic-latin-400-normal.woff2','../library/fonts/ibm-plex-sans-arabic-latin-600-normal.woff2','../library/fonts/ibm-plex-sans-arabic-latin-700-normal.woff2',
@@ -31,14 +31,15 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== self.location.origin) return;
   const isApp = req.mode === 'navigate' && (url.pathname === SCOPE || url.pathname === SCOPE + 'index.html');
-  if (!isApp && (url.search || !SHELL_PATHS.has(url.pathname))) return;
+  const isLesson = req.mode === 'navigate' && url.pathname === SCOPE + 'lesson.html';   // lesson.html?id=… is one cached page
+  if (!isApp && !isLesson && (url.search || !SHELL_PATHS.has(url.pathname))) return;
   e.respondWith((async () => {
     const c = await caches.open(CACHE);
-    const key = isApp ? 'index.html' : req;
+    const key = isApp ? 'index.html' : isLesson ? 'lesson.html' : req;
     const hit = await c.match(key);
     const fresh = fetch(req, { cache: 'no-cache' }).then(res => {
       const html = (res.headers.get('content-type') || '').startsWith('text/html');
-      if (res && res.ok && !res.redirected && (!isApp || html)) c.put(key, res.clone());
+      if (res && res.ok && !res.redirected && (!(isApp || isLesson) || html)) c.put(key, res.clone());
       return res;
     }).catch(() => null);
     if (hit) { e.waitUntil(fresh); return hit; }
