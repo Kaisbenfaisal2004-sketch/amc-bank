@@ -7,6 +7,7 @@ import argparse, datetime, hashlib, json, re, sys
 
 FS_DOC_LIMIT = 1_000_000        # Firestore: 1 MiB per document (a little room left for field names)
 PART_BYTES = 700_000
+CHUNK = 900_000                # base64 characters per media piece
 
 ap = argparse.ArgumentParser()
 ap.add_argument('html'); ap.add_argument('out')
@@ -21,16 +22,23 @@ html = src
 html = re.sub(r'<link rel="preconnect" href="https://fonts\.(googleapis|gstatic)\.com"[^>]*>\s*', '', html)
 html = re.sub(r'<link href="https://fonts\.googleapis\.com/[^"]*" rel="stylesheet">\s*', '', html)
 
-images = {}
+# pictures (i01…), videos (v01…) and sounds (a01…) come out of the text; anything over Firestore's 1 MiB
+# document limit is split into numbered pieces (v01-0, v01-1…) that the app joins back together.
+images, joins = {}, {}
 def take(m):
-    name = 'i%02d' % (len(images) + 1)
-    images[name] = m.group(1)
-    return 'src="lesson-img:' + name + '"'
-html = re.sub(r'src="(data:image/[a-z+]+;base64,[A-Za-z0-9+/=]+)"', take, html)
+    attr, data, kind = m.group(1), m.group(2), m.group(3)
+    name = {'image': 'i', 'video': 'v', 'audio': 'a'}[kind] + '%02d' % (1 + sum(1 for k in list(images) + list(joins) if k[0] == kind[0] and '-' not in k))
+    if len(data.encode()) > CHUNK:
+        joins[name] = [name + '-' + str(i) for i in range((len(data) + CHUNK - 1) // CHUNK)]
+        for i, piece in enumerate(joins[name]): images[piece] = data[i * CHUNK:(i + 1) * CHUNK]
+    else:
+        images[name] = data
+    return attr + '="lesson-img:' + name + '"'
+html = re.sub(r'(src|poster)="(data:(image|video|audio)/[a-z0-9+.-]+;base64,[A-Za-z0-9+/=]+)"', take, html)
 
 big = [n for n, d in images.items() if len(d.encode()) > FS_DOC_LIMIT]
-if big: sys.exit('picture too large for one Firestore document: ' + ', '.join(big))
-if 'data:image' in html: sys.exit('a picture was left inside the text (unexpected format)')
+if big: sys.exit('piece too large for one Firestore document: ' + ', '.join(big))
+if re.search(r'data:(image|video|audio)/', html): sys.exit('a picture, video or sound was left inside the text (unexpected format)')
 
 # split the page into pieces by size in bytes, without cutting a character
 parts, cur, size = [], [], 0
@@ -41,7 +49,8 @@ for ch in html:
 if cur: parts.append(''.join(cur))
 
 # check: rebuilding gives back exactly the original page (apart from the removed font links)
-rebuilt = re.sub(r'lesson-img:(i\d\d)', lambda m: images[m.group(1)], ''.join(parts))
+full = lambda n: ''.join(images[p] for p in joins[n]) if n in joins else images[n]
+rebuilt = re.sub(r'lesson-img:([iva]\d\d)', lambda m: full(m.group(1)), ''.join(parts))
 expect = re.sub(r'<link rel="preconnect" href="https://fonts\.(googleapis|gstatic)\.com"[^>]*>\s*', '', src)
 expect = re.sub(r'<link href="https://fonts\.googleapis\.com/[^"]*" rel="stylesheet">\s*', '', expect)
 assert rebuilt == expect, 'rebuild check failed'
@@ -50,8 +59,8 @@ lid = a.id or re.sub(r'[^a-z0-9]+', '-', (a.subject + '-' + a.title).lower()).st
 sections = len(re.findall(r'<label class="done"><input[^>]*data-sec=', html))
 meta = {'title': a.title, 'subject': a.subject, 'order': a.order, 'added': a.added,
         'version': hashlib.sha1(src.encode()).hexdigest()[:12], 'parts': len(parts),
-        'images': list(images), 'sections': sections}
+        'images': list(images), 'joins': joins, 'sections': sections}
 json.dump({'type': 'kais-lesson', 'id': lid, 'meta': meta, 'parts': parts, 'images': images},
           open(a.out, 'w', encoding='utf-8'), ensure_ascii=False)
-print(f'{lid}: {len(parts)} text piece(s), {len(images)} pictures, {sections} sections, '
-      f'{sum(len(p.encode()) for p in parts)//1024} KB text, {sum(len(d) for d in images.values())//1024} KB pictures — rebuild check OK')
+print(f'{lid}: {len(parts)} text piece(s), {len(images)} media pieces ({len(joins)} joined), {sections} sections, '
+      f'{sum(len(p.encode()) for p in parts)//1024} KB text, {sum(len(d) for d in images.values())//1024} KB pictures/media — rebuild check OK')

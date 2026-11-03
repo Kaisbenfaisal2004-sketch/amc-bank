@@ -50,6 +50,8 @@ async function getPage(meta) {
   const ver = lsGet(LS_VER, {}), cached = ver[id] === meta.version;
   let html = await store.loadParts(meta, cached);
   const imgs = await store.loadImages(meta, cached);
+  // large videos or sounds come in pieces; put each back together
+  for (const [n, pieces] of Object.entries(meta.joins || {})) imgs[n] = pieces.map(p => imgs[p] || '').join('');
   if (!cached && navigator.onLine) { ver[id] = meta.version; lsSet(LS_VER, ver); }
   return html.replace(/lesson-img:([A-Za-z0-9_-]+)/g, (m, n) => imgs[n] || '');
 }
@@ -111,6 +113,18 @@ function mount(html) {
   }));
   for (const a of doc.body.attributes) document.body.setAttribute(a.name, a.value);
   for (const old of scripts) { const s = document.createElement('script'); for (const a of old.attributes) s.setAttribute(a.name, a.value); s.textContent = old.textContent; old.replaceWith(s); }
+}
+
+// videos and sounds play more reliably (especially on iPhone) from a file kept in memory than from a long data: text
+function mediaToBlobs() {
+  document.querySelectorAll('video[src^="data:"], audio[src^="data:"]').forEach(el => {
+    try {
+      const src = el.getAttribute('src'), comma = src.indexOf(','), mime = src.slice(5, src.indexOf(';'));
+      const bin = atob(src.slice(comma + 1)), u8 = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      el.src = URL.createObjectURL(new Blob([u8], { type: mime }));
+    } catch (e) {}
+  });
 }
 
 function wire() {
@@ -197,6 +211,7 @@ async function start() {
     try { html = await getPage(meta); }
     catch (e) { say((navigator.onLine ? 'تعذّر فتح الشرح. أعد المحاولة بعد قليل.' : 'هذا الشرح لم يُحفظ على هذا الجهاز بعد. افتحه مرة وأنت متصل بالإنترنت.') + '<br><a href="./">رجوع</a>'); return; }
     mount(html);
+    mediaToBlobs();
     wire();
   });
 }
