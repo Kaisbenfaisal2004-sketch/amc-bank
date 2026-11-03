@@ -1,10 +1,11 @@
 // Offline copy of the lessons app itself (the lessons are kept by Firebase on the device, not here).
 // Answers from the stored copy straight away, and refreshes it in the background when online.
-const CACHE = 'lessons-v2';
+const CACHE = 'lessons-v3';
 const SHELL = [
   './', 'index.html', 'lesson.html', 'app.css', 'app.js', 'lesson.js', 'store.js', '../config.js', '../vendor/firebase.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
   '../library/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2','../library/fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2','../library/fonts/ibm-plex-sans-arabic-arabic-700-normal.woff2',
+  'fonts/reem-kufi-arabic-500-normal.woff2','fonts/reem-kufi-arabic-700-normal.woff2','fonts/reem-kufi-latin-500-normal.woff2','fonts/reem-kufi-latin-700-normal.woff2',
   '../library/fonts/ibm-plex-sans-arabic-latin-400-normal.woff2','../library/fonts/ibm-plex-sans-arabic-latin-600-normal.woff2','../library/fonts/ibm-plex-sans-arabic-latin-700-normal.woff2',
 ];
 

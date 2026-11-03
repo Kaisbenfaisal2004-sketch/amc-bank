@@ -23,7 +23,7 @@
     <div class="sync" id="sync"><i></i><span>محفوظ على هذا الجهاز</span></div>
   </header>
 
-  <section id="signin" class="card signin" hidden>
+  <section id="signin" class="signin" hidden>
     <h2>سجّل الدخول</h2>
     <p class="tip">استعمل نفس البريد وكلمة المرور التي تدخل بهما إلى تطبيق الأسئلة.</p>
     <form id="sForm" novalidate>
@@ -37,26 +37,24 @@
     </form>
   </section>
 
-  <section id="contWrap" hidden>
-    <div class="sec-h"><h2>تابع من حيث توقفت</h2></div>
-    <div id="cont"></div>
-  </section>
+  <section class="monitor" id="monitor" hidden aria-live="polite"></section>
 
   <section>
-    <input class="search" id="q" type="search" placeholder="ابحث باسم الشرح أو المادة…" aria-label="بحث">
-    <div id="list"><div class="empty">جارٍ تحميل الشروح…</div></div>
+    <input class="search" id="q" type="search" placeholder="ابحث باسم الشرح أو المادة" aria-label="بحث">
   </section>
 
-  <section class="card set">
-    <div class="row apps">
-      <a class="btn ghost small" href="../">تطبيق الأسئلة</a>
-      <a class="btn ghost small" href="../library/">مكتبة الروايات</a>
+  <div id="list"><div class="empty">جارٍ تحميل الشروح…</div></div>
+
+  <section class="set">
+    <div class="apps">
+      <a href="../"><img src="../icons/icon-192.png" alt="">تطبيق الأسئلة</a>
+      <a href="../library/"><img src="../library/icons/icon-192.png" alt="">مكتبة الروايات</a>
     </div>
     <div id="accIn" hidden>
-      <div class="row acc"><span class="tip">الحساب: <b id="accWho" dir="ltr"></b></span><button class="link" id="sOut">خروج</button></div>
-      <div class="row">
+      <div class="row2"><span class="tip">الحساب: <b id="accWho" dir="ltr"></b></span><button class="link" id="sOut">خروج</button></div>
+      <div class="row2">
         <span>إضافة شرح أو تحديثه</span>
-        <label class="btn ghost small" for="impFile">اختر الملف</label>
+        <label class="btn ghost small" for="impFile" tabindex="0">اختر الملف</label>
         <input type="file" id="impFile" accept=".json,application/json" hidden>
       </div>
       <p class="tip" id="impMsg" hidden></p>

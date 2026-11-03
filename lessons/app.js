@@ -74,7 +74,7 @@ function watchState() {
 function showSignedOut(msg) {
   user = null; LIST = null;
   $('signin').hidden = false; $('accIn').hidden = true; setSync('local');
-  $('contWrap').hidden = true;
+  $('monitor').hidden = true; monitorKey = '';
   $('list').innerHTML = '<div class="empty">' + esc(msg || 'سجّل الدخول لتظهر شروحك.') + '</div>';
 }
 $('sForm').addEventListener('submit', async e => {
@@ -145,12 +145,62 @@ function ago(t) {
   const h = m / 60; if (h < 24) return 'اليوم';
   const d = Math.floor(h / 24); return d === 1 ? 'أمس' : d === 2 ? 'قبل يومين' : d <= 10 ? 'قبل ' + d + ' أيام' : 'قبل ' + d + ' يومًا';
 }
-function lessonCard(m, cont) {
-  const p = progressOf(m);
-  const el = document.createElement('button'); el.className = 'ls' + (cont ? ' cont' : '');
-  el.innerHTML = '<div class="t">' + esc(m.title) + '</div>' +
-    '<div class="meta">' + (cont ? esc(m.subject) + ' · ' : '') + (p.last ? 'أنهيت ' + p.done + ' من ' + p.total + ' أقسام · آخر فتح ' + ago(p.last) : (p.total ? p.total + ' أقسام · ' : '') + 'لم تفتحه بعد') + '</div>' +
-    '<div class="pbar"><u style="width:' + p.pct + '%"></u></div>';
+// the heartbeat trace: drawn from the right (where reading starts) to how far you are in the lesson
+function ecgPoints(xEnd) {
+  const pts = [];
+  for (let x = 400; x >= xEnd; x--) {
+    const t = (400 - x) % 80; let y = 60;
+    if (t >= 24 && t < 34) y = 60 - 5 * Math.sin(Math.PI * (t - 24) / 10);
+    else if (t >= 40 && t < 42) y = 60 + 3 * (t - 40);
+    else if (t >= 42 && t < 46) y = 66 - 13 * (t - 42);
+    else if (t >= 46 && t < 50) y = 14 + 15.5 * (t - 46);
+    else if (t >= 50 && t < 54) y = 76 - 4 * (t - 50);
+    else if (t >= 54 && t < 68) y = 60 - 9 * Math.sin(Math.PI * (t - 54) / 14);
+    pts.push(x + ',' + y.toFixed(1));
+  }
+  return pts;
+}
+function ecgSvg(frac) {
+  const xEnd = Math.round(400 - (0.2 + 0.8 * Math.max(0, Math.min(1, frac))) * 400);   // always at least one beat
+  const live = ecgPoints(xEnd), endY = live[live.length - 1].split(',')[1];
+  return '<svg class="ecg" viewBox="0 0 400 96" preserveAspectRatio="none" aria-hidden="true">' +
+    (xEnd > 0 ? '<line class="flat" x1="0" y1="60" x2="' + xEnd + '" y2="60" stroke-width="1.5" vector-effect="non-scaling-stroke"/>' : '') +
+    '<polyline class="live" points="' + live.join(' ') + '" fill="none" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1">' +
+    '<animate attributeName="stroke-dashoffset" from="1" to="0" dur="1.3s" begin="0.15s" fill="freeze" calcMode="spline" keySplines="0.3 0.7 0.2 1" keyTimes="0;1"/></polyline>' +
+    '<circle class="halo" cx="' + xEnd + '" cy="' + endY + '" r="5"/><circle class="dot" cx="' + xEnd + '" cy="' + endY + '" r="3.6"/></svg>';
+}
+const partNo = t => { const m = /Part\s*(\d+)/i.exec(t || ''); return m ? m[1] : ''; };
+const shortTitle = t => String(t || '').replace(/^\s*Part\s*\d+\s*[:\-–]?\s*/i, '');
+const nLessons = n => n === 1 ? 'شرح واحد' : n === 2 ? 'شرحان' : n <= 10 ? n + ' شروح' : n + ' شرحًا';
+let monitorKey = '';
+function renderMonitor(all, q) {
+  const mon = $('monitor');
+  if (!all.length || q) { mon.hidden = true; return; }
+  const recent = all.filter(m => S.items[m.id] && S.items[m.id].last).sort((a, b) => S.items[b.id].last - S.items[a.id].last)[0];
+  const m = recent || all[0], p = progressOf(m);
+  const key = m.id + ':' + p.done + '/' + p.total + ':' + !!recent;
+  mon.hidden = false;
+  if (key === monitorKey) return;          // draw the trace once, not on every refresh
+  monitorKey = key;
+  mon.classList.toggle('empty', !recent);
+  mon.innerHTML =
+    '<div class="lbl">' + (recent ? 'آخر ما فتحته في ' + esc(m.subject) : 'لم تبدأ بعد') + '</div>' +
+    '<div class="ttl">' + esc(m.title) + '</div>' +
+    '<div class="sub">' + (recent ? (p.done === p.total && p.total ? 'أنهيت كل الأقسام' : 'أنهيت <b>' + p.done + '</b> من ' + p.total + ' أقسام') + '، آخر فتح ' + ago(p.last) : (p.total ? p.total + ' أقسام تنتظرك' : '')) + '</div>' +
+    '<a class="go" href="lesson.html?id=' + encodeURIComponent(m.id) + '">' + (recent ? 'تابع' : 'ابدأ') + '</a>' +
+    ecgSvg(p.total ? p.done / p.total : 0);
+  mon.querySelector('.go').addEventListener('click', e => { e.preventDefault(); openLesson(m.id); });
+}
+function lessonRow(m) {
+  const p = progressOf(m), C = 138.2;
+  const el = document.createElement('button'); el.className = 'row' + (p.total && p.done === p.total ? ' done' : '');
+  const beads = p.total ? '<div class="beads" aria-hidden="true">' + Array.from({ length: p.total }, (_, i) => '<i' + (i < p.done ? ' class="on"' : '') + '></i>').join('') + '</div>' : '';
+  el.innerHTML = '<span class="ring" aria-hidden="true"><svg viewBox="0 0 52 52"><circle class="tr" cx="26" cy="26" r="22" fill="none" stroke-width="5"/>' +
+    '<circle class="pr" cx="26" cy="26" r="22" fill="none" stroke-width="5" stroke-linecap="round" stroke-dasharray="' + C + '" stroke-dashoffset="' + C + '" data-to="' + (C * (1 - p.pct / 100)).toFixed(1) + '"/></svg>' +
+    '<b>' + esc(partNo(m.title) || '•') + '</b></span>' +
+    '<span><div class="t">' + esc(shortTitle(m.title) || m.title) + '</div>' + beads +
+    '<div class="meta">' + (!p.last ? 'لم تفتحه بعد' : p.total && p.done === p.total ? 'أنهيت كل الأقسام' : 'أنهيت ' + p.done + ' من ' + p.total + '، آخر فتح ' + ago(p.last)) + '</div></span>';
+  el.setAttribute('aria-label', m.title + '، ' + (p.total ? 'أنهيت ' + p.done + ' من ' + p.total + ' أقسام' : ''));
   el.addEventListener('click', () => openLesson(m.id));
   return el;
 }
@@ -158,17 +208,20 @@ function renderHome() {
   if (!LIST) return;
   const q = ($('q').value || '').trim().toLowerCase();
   const all = LIST.slice().sort((a, b) => byName(a.subject, b.subject) || (a.order || 0) - (b.order || 0) || byName(a.title, b.title));
-  const recent = all.filter(m => S.items[m.id] && S.items[m.id].last).sort((a, b) => S.items[b.id].last - S.items[a.id].last)[0];
-  $('contWrap').hidden = !recent || !!q;
-  if (recent) { $('cont').innerHTML = ''; $('cont').appendChild(lessonCard(recent, true)); }
+  renderMonitor(all, q);
   const L = $('list'); L.innerHTML = '';
   const shown = all.filter(m => !q || (m.title + ' ' + m.subject).toLowerCase().includes(q));
-  if (!shown.length) { L.innerHTML = '<div class="empty">' + (all.length ? 'لا شيء يطابق البحث.' : 'لا توجد شروح بعد. أضف شرحًا من «إضافة شرح» في الأسفل.') + '</div>'; return; }
-  let cur = null;
-  for (const m of shown) {
-    if (m.subject !== cur) { cur = m.subject; const h = document.createElement('h3'); h.className = 'subj'; h.textContent = cur; L.appendChild(h); }
-    L.appendChild(lessonCard(m));
+  if (!shown.length) { L.innerHTML = '<div class="empty">' + (all.length ? 'لا شيء يطابق البحث.' : 'لا توجد شروح بعد. أضف شرحًا من «إضافة شرح أو تحديثه» في الأسفل.') + '</div>'; return; }
+  const groups = [];
+  for (const m of shown) { let g = groups[groups.length - 1]; if (!g || g.subject !== m.subject) groups.push(g = { subject: m.subject, items: [] }); g.items.push(m); }
+  for (const g of groups) {
+    const sec = document.createElement('section'); sec.className = 'subj';
+    sec.innerHTML = '<h2><small>' + nLessons(g.items.length) + '</small>' + esc(g.subject) + '</h2>';
+    const rows = document.createElement('div'); rows.className = 'rows';
+    g.items.forEach(m => rows.appendChild(lessonRow(m)));
+    sec.appendChild(rows); L.appendChild(sec);
   }
+  requestAnimationFrame(() => requestAnimationFrame(() => L.querySelectorAll('.ring .pr').forEach(c => { c.style.strokeDashoffset = c.dataset.to; })));
 }
 $('q').addEventListener('input', renderHome);
 
