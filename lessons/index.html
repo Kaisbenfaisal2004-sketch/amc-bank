@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>شروح قيس</title>
+<meta name="theme-color" content="#8a3b5c">
+<!-- Lessons are full pages with their own small scripts, shown inside a frame built from the private copy in Firebase;
+     so inline scripts are allowed here, but the page still cannot talk to any server except Firebase. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src 'self' about:; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="الشروح">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<main id="home">
+  <header class="top">
+    <h1>شروح قيس</h1>
+    <div class="sync" id="sync"><i></i><span>محفوظ على هذا الجهاز</span></div>
+  </header>
+
+  <section id="signin" class="card signin" hidden>
+    <h2>سجّل الدخول</h2>
+    <p class="tip">استعمل نفس البريد وكلمة المرور التي تدخل بهما إلى تطبيق الأسئلة.</p>
+    <form id="sForm" novalidate>
+      <label for="sEmail">البريد</label>
+      <input id="sEmail" type="email" dir="ltr" autocomplete="username" required>
+      <label for="sPass">كلمة المرور</label>
+      <input id="sPass" type="password" dir="ltr" autocomplete="current-password" required minlength="6">
+      <button type="submit" class="btn wide" id="sBtn">دخول</button>
+      <button type="button" class="link" id="sReset">نسيت كلمة المرور</button>
+      <p class="err" id="sErr" hidden></p>
+    </form>
+  </section>
+
+  <section id="contWrap" hidden>
+    <div class="sec-h"><h2>تابع من حيث توقفت</h2></div>
+    <div id="cont"></div>
+  </section>
+
+  <section>
+    <input class="search" id="q" type="search" placeholder="ابحث باسم الشرح أو المادة…" aria-label="بحث">
+    <div id="list"><div class="empty">جارٍ تحميل الشروح…</div></div>
+  </section>
+
+  <section class="card set">
+    <div class="row apps">
+      <a class="btn ghost small" href="../">تطبيق الأسئلة</a>
+      <a class="btn ghost small" href="../library/">مكتبة الروايات</a>
+    </div>
+    <div id="accIn" hidden>
+      <div class="row acc"><span class="tip">الحساب: <b id="accWho" dir="ltr"></b></span><button class="link" id="sOut">خروج</button></div>
+      <div class="row">
+        <span>إضافة شرح أو تحديثه</span>
+        <label class="btn ghost small" for="impFile">اختر الملف</label>
+        <input type="file" id="impFile" accept=".json,application/json" hidden>
+      </div>
+      <p class="tip" id="impMsg" hidden></p>
+    </div>
+  </section>
+</main>
+
+<div id="reader" hidden>
+  <div class="loading" id="rLoad">جارٍ فتح الشرح…</div>
+  <iframe id="rFrame" title="الشرح"></iframe>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -31,6 +31,20 @@ service cloud.firestore {
     match /library/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == 'VBdzQU3iKcSTV3XRRMUZGNqU0Fg1';
     }
+    // Lessons app (lessons/): which sections are finished and the reading place — one document, owner only.
+    match /users/{uid}/lessons/{docId} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null && request.auth.uid == uid
+        && uid == 'VBdzQU3iKcSTV3XRRMUZGNqU0Fg1'
+        && docId == 'state'
+        && request.resource.data.keys().hasOnly(['v', 'items'])
+        && request.resource.data.items is map
+        && request.resource.data.items.size() <= 2000;
+    }
+    // Lessons (text and pictures): only the owner account.
+    match /lessons/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == 'VBdzQU3iKcSTV3XRRMUZGNqU0Fg1';
+    }
     // Everything else: denied (Firestore default).
   }
 }
