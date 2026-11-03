@@ -24,15 +24,17 @@ html = re.sub(r'<link href="https://fonts\.googleapis\.com/[^"]*" rel="styleshee
 
 # pictures (i01…), videos (v01…) and sounds (a01…) come out of the text; anything over Firestore's 1 MiB
 # document limit is split into numbered pieces (v01-0, v01-1…) that the app joins back together.
-images, joins = {}, {}
+images, joins, seen = {}, {}, {}
 def take(m):
     attr, data, kind = m.group(1), m.group(2), m.group(3)
+    if data in seen: return attr + '="lesson-img:' + seen[data] + '"'     # the same picture used twice is stored once
     name = {'image': 'i', 'video': 'v', 'audio': 'a'}[kind] + '%02d' % (1 + sum(1 for k in list(images) + list(joins) if k[0] == kind[0] and '-' not in k))
     if len(data.encode()) > CHUNK:
         joins[name] = [name + '-' + str(i) for i in range((len(data) + CHUNK - 1) // CHUNK)]
         for i, piece in enumerate(joins[name]): images[piece] = data[i * CHUNK:(i + 1) * CHUNK]
     else:
         images[name] = data
+    seen[data] = name
     return attr + '="lesson-img:' + name + '"'
 html = re.sub(r'(src|poster)="(data:(image|video|audio)/[a-z0-9+.-]+;base64,[A-Za-z0-9+/=]+)"', take, html)
 
