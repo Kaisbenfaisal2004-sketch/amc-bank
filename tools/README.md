@@ -9,6 +9,7 @@ The public site (repo root) contains **no questions**. Questions live in Firebas
 3. `python3 verify_pdf.py BANK.pdf bank.json` - second PDF engine; every question must be verbatim and in order (missing: 0).
 4. `python3 build_app.py bank.json RATIONALES.json .. all` - writes `out/<Subject>_App_Import.json` and rebuilds `../app.css`.
    (`build_app.py` currently has the subject id/title for Women's Health; change them for a new subject.)
+   `images.json` and `corrections.json` are keyed by question id (from the rationales file), so re-dividing a bank into new chapters keeps every image and fix on its own question, and saved answers keep working.
 5. In the app: sign in → "Add or update a subject…" → choose the import file.
 
 ## Tests
