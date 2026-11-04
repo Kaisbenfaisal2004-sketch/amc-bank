@@ -81,7 +81,7 @@ function mount(html) {
     '@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){' + dark + '}}' +
     ':root[data-theme="dark"]{' + dark + '}' +
     'body{font-family:"Plex Arabic","Geeza Pro","Noto Naskh Arabic",serif}' +
-    'main h1,main h2{font-family:"Reem Kufi","Plex Arabic",sans-serif;font-weight:700;letter-spacing:0}' +
+    'main h1,main h2{font-family:"Plex Arabic",sans-serif;font-weight:700;letter-spacing:0}' +
     'main h1{border-radius:20px;padding:.5em .8em}main>h1:first-child{margin-top:.5em}' +
     '#progress{height:3px;background:var(--k-trace);box-shadow:0 0 8px var(--k-trace)}' +
     '#kBack{font:inherit;font-size:.75em;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:4px 12px;cursor:pointer;white-space:nowrap}' +
@@ -100,8 +100,9 @@ function mount(html) {
     'label.done svg.kecg polyline{stroke:var(--k-trace);stroke-width:2.2;fill:none;stroke-linejoin:round;stroke-dasharray:1 1;stroke-dashoffset:1;opacity:0}' +
     'label.done.fire svg.kecg polyline{animation:kbeat 1.1s cubic-bezier(.3,.6,.2,1) forwards}' +
     '@keyframes kbeat{0%{stroke-dashoffset:1;opacity:1}75%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}' +
-    '#kToast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translate(-50%,140%);background:var(--fg);color:var(--bg);padding:11px 18px;border-radius:14px;font-size:.82em;font-weight:600;z-index:60;transition:transform .35s cubic-bezier(.2,.9,.3,1.2);white-space:nowrap}' +
-    '#kToast.show{transform:translate(-50%,0)}' +
+    '#kToast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);opacity:0;visibility:hidden;pointer-events:none;background:var(--fg);color:var(--bg);padding:11px 18px;border-radius:14px;font-size:.82em;font-weight:600;z-index:60;transition:transform .35s cubic-bezier(.2,.9,.3,1.2),opacity .25s,visibility 0s linear .35s;white-space:nowrap}' +
+    '#kToast.show{transform:translate(-50%,0);opacity:1;visibility:visible;transition:transform .35s cubic-bezier(.2,.9,.3,1.2),opacity .25s,visibility 0s}' +
+    'header.top button,#kBack{white-space:nowrap}' +
     '@media (max-width:560px){header.top .title{display:none}header.top{gap:6px;padding-left:10px;padding-right:10px}header.top button,#kBack{padding:4px 9px}}' +
     '@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}';
   document.head.appendChild(extra);
