@@ -67,15 +67,12 @@ function mount(html) {
   const f = n => 'url(../library/fonts/ibm-plex-sans-arabic-' + n + '.woff2) format("woff2")';
   const ar = 'unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC';
   // the app's look laid over every lesson: same palette and type as the home page, section ticks as big toggles
-  const kf = n => 'url(fonts/reem-kufi-' + n + '.woff2) format("woff2")', lat = 'unicode-range:U+0000-00FF,U+2000-206F,U+2212';
   const light = '--bg:#edf2f5;--card:#fff;--fg:#15283a;--muted:#5b6b7a;--line:#d3dde4;--accent:#1f6f7a;--accent-soft:#d6ecef;--blue:#2b5f8a;--blue-soft:#e3edf5;--gray-soft:#e2e9ee;--k-trace:#e0435a;--k-scrub:#1f7a86;--k-scrub-soft:#d6ecef';
   const dark = '--bg:#0e1923;--card:#16232f;--fg:#e6eef3;--muted:#93a4b3;--line:#243442;--accent:#4fb8c4;--accent-soft:#173640;--blue:#8cc0ea;--blue-soft:#162a3b;--gray-soft:#1d2c39;--k-trace:#ff5c73;--k-scrub:#4fb8c4;--k-scrub-soft:#173640';
   extra.textContent =
     '@font-face{font-family:"Plex Arabic";src:' + f('arabic-400-normal') + ';font-weight:400;' + ar + '}' +
     '@font-face{font-family:"Plex Arabic";src:' + f('arabic-600-normal') + ';font-weight:500 600;' + ar + '}' +
     '@font-face{font-family:"Plex Arabic";src:' + f('arabic-700-normal') + ';font-weight:700;' + ar + '}' +
-    '@font-face{font-family:"Reem Kufi";src:' + kf('arabic-700-normal') + ';font-weight:600 700;' + ar + '}' +
-    '@font-face{font-family:"Reem Kufi";src:' + kf('latin-700-normal') + ';font-weight:600 700;' + lat + '}' +
     '@view-transition{navigation:auto}' +
     ':root{' + light + '}' +
     '@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){' + dark + '}}' +

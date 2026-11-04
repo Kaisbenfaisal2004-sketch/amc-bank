@@ -4,10 +4,6 @@
 @font-face{font-family:"Plex Arabic";src:url(../library/fonts/ibm-plex-sans-arabic-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
 @font-face{font-family:"Plex Arabic";src:url(../library/fonts/ibm-plex-sans-arabic-latin-600-normal.woff2) format("woff2");font-weight:500 600;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
 @font-face{font-family:"Plex Arabic";src:url(../library/fonts/ibm-plex-sans-arabic-latin-700-normal.woff2) format("woff2");font-weight:700;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
-@font-face{font-family:"Reem Kufi";src:url(fonts/reem-kufi-arabic-500-normal.woff2) format("woff2");font-weight:400 500;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
-@font-face{font-family:"Reem Kufi";src:url(fonts/reem-kufi-arabic-700-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
-@font-face{font-family:"Reem Kufi";src:url(fonts/reem-kufi-latin-500-normal.woff2) format("woff2");font-weight:400 500;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
-@font-face{font-family:"Reem Kufi";src:url(fonts/reem-kufi-latin-700-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
 @view-transition{navigation:auto}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -20,7 +16,7 @@ body{margin:0}
   --trace:#e0435a; --scrub:#1f7a86; --scrub-soft:#d6ecef; --amber:#f2a93b;
   --screen:#12202c; --screen-ink:#e9f1f5; --screen-muted:#8fa3b2; --grid:rgba(79,184,196,.10);
   --ui:"Plex Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
-  --display:"Reem Kufi","Plex Arabic",system-ui,sans-serif;
+  --display:"Plex Arabic",system-ui,-apple-system,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root{
   --paper:#0e1923; --surface:#16232f; --sunk:#1d2c39; --ink:#e6eef3; --muted:#93a4b3; --line:#243442;
