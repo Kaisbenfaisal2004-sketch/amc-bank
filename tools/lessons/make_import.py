@@ -59,6 +59,8 @@ assert rebuilt == expect, 'rebuild check failed'
 
 lid = a.id or re.sub(r'[^a-z0-9]+', '-', (a.subject + '-' + a.title).lower()).strip('-')[:60]
 sections = len(re.findall(r'<label class="done"><input[^>]*data-sec=', html))
+m_sec = re.search(r'<meta name="kais-sections" content="(\d+)"', html)
+if m_sec: sections = int(m_sec.group(1))  # pages with their own design say how many parts they have
 meta = {'title': a.title, 'subject': a.subject, 'order': a.order, 'added': a.added,
         'version': hashlib.sha1(src.encode()).hexdigest()[:12], 'parts': len(parts),
         'images': list(images), 'joins': joins, 'sections': sections}

@@ -13,7 +13,7 @@ const home = () => { location.href = './'; };
 let S = Object.assign({ v: 1, items: {}, ui: {} }, lsGet(LS_STATE, {}));
 S.items = S.items || {};
 const item = () => S.items[id] || (S.items[id] = { done: {}, total: 0, last: 0, pos: 0, at: 0 });
-let store = null, user = null, writing = false, again = false, pushT = 0, touched = false, boxes = [];
+let v2 = false, store = null, user = null, writing = false, again = false, pushT = 0, touched = false, boxes = [];
 
 function reloadLocal() { const r = lsGet(LS_STATE, null); if (r && r.items) for (const [k, v] of Object.entries(r.items)) if (k !== id && (!S.items[k] || (v.at || 0) > (S.items[k].at || 0))) S.items[k] = v; }
 function saveLocal() { reloadLocal(); lsSet(LS_STATE, S); }
@@ -102,6 +102,19 @@ function mount(html) {
     'header.top button,#kBack{white-space:nowrap}' +
     '@media (max-width:560px){header.top .title{display:none}header.top{gap:6px;padding-left:10px;padding-right:10px}header.top button,#kBack{padding:4px 9px}}' +
     '@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}';
+  if (doc.querySelector('meta[name="kais-design"][content="v2"]')) {
+    extra.textContent = extra.textContent.split(':root{')[0] +
+      '@font-face{font-family:"Plex Arabic";src:' + f('latin-400-normal') + ';font-weight:400;unicode-range:U+0000-024F,U+2000-206F}' +
+      '@font-face{font-family:"Plex Arabic";src:' + f('latin-600-normal') + ';font-weight:500 600;unicode-range:U+0000-024F,U+2000-206F}' +
+      '@font-face{font-family:"Plex Arabic";src:' + f('latin-700-normal') + ';font-weight:700;unicode-range:U+0000-024F,U+2000-206F}';
+    v2 = true;
+    window.KAIS = {
+      getDone: () => Object.assign({}, item().done || {}),
+      setTotal: n => { const i = item(); if (i.total !== n) { i.total = n; saveLocal(); } },
+      setDone: (sec, on) => { touched = true; const i = item(); i.done = i.done || {}; if (on) i.done[sec] = true; else delete i.done[sec]; i.at = Date.now(); saveLocal(); schedulePush(800); },
+      home: () => { saveLocal(); push(); home(); }
+    };
+  }
   document.head.appendChild(extra);
   const scripts = [];
   document.body.replaceChildren(...Array.from(doc.body.childNodes).map(n => {
@@ -125,7 +138,15 @@ function mediaToBlobs() {
   });
 }
 
+function wireV2() {
+  const it = item(); it.last = Date.now(); it.at = Date.now(); saveLocal(); schedulePush(1500);
+  const flush = () => { saveLocal(); push(); };
+  addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
+  addEventListener('online', push);
+}
 function wire() {
+  if (v2) return wireV2();
   const it = item();
   const bar = document.querySelector('header.top');
   if (bar) {
