@@ -222,7 +222,9 @@ async function start() {
     user = u;
     if (!u) { if (!opened) say('سجّل الدخول أولًا من الصفحة الرئيسية.<br><a href="./">رجوع</a>'); return; }
     if (opened) return; opened = true;
-    store.watchState((data, meta) => { if (data) merge(data); if (meta && !meta.fromCache && !meta.error) push(); });
+    // push once when the account first answers; pushing on every server snapshot made each write trigger the next one
+    let firstServer = false;
+    store.watchState((data, meta) => { if (data) merge(data); if (meta && !meta.fromCache && !meta.error && !firstServer) { firstServer = true; push(); } });
     let list = lsGet(LS_LIST, null), meta = list && list.find(l => l.id === id);
     if (!meta) { try { list = await store.listLessons(); lsSet(LS_LIST, list); meta = list.find(l => l.id === id); } catch (e) {} }
     if (!meta) { say('لم أجد هذا الشرح.<br><a href="./">رجوع</a>'); return; }
