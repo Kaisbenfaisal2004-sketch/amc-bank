@@ -13,10 +13,13 @@ const ICON_PLAY = '<svg viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v
 const LS_STATE = 'kais_library_v1', LS_LIB = 'kais_library_list', LS_VER = 'kais_library_cached';
 
 /* ---------- state ---------- */
-const blank = () => ({ v: 1, goal: 30, goalAt: 0, days: {}, books: {}, prefs: { fs: 20, lh: 1.7, rt: 'auto' }, ui: { open: null } });
+const blank = () => ({ v: 1, goal: 30, goalAt: 0, days: {}, books: {}, prefs: { fs: 26, lh: 1.7, rt: 'auto' }, ui: { open: null } });
 let S = blank();
 try { const raw = localStorage.getItem(LS_STATE); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch (e) {}
 S.prefs = Object.assign(blank().prefs, S.prefs || {}); S.ui = S.ui || { open: null };
+// Nov 2026: bigger text for phone reading — lift any older, smaller saved size once.
+function bigText(src) { if (src && src.big) return; S.prefs.big = 1; if (S.prefs.fs < 26) { S.prefs.fs = 26; S.prefsAt = Date.now(); } }
+bigText(S.prefs);
 let localT = 0;
 function saveLocal(now = false) {
   const w = () => { try { localStorage.setItem(LS_STATE, JSON.stringify(S)); } catch (e) {} };
@@ -44,7 +47,7 @@ function merge(r) {
     mine.secs = secs; mine.finished = fin;
   }
   if (r.goal && (r.goalAt || 0) > (S.goalAt || 0)) { S.goal = r.goal; S.goalAt = r.goalAt; }
-  if (r.prefs && (r.prefsAt || 0) > (S.prefsAt || 0)) { S.prefs = Object.assign(S.prefs, r.prefs); S.prefsAt = r.prefsAt; }
+  if (r.prefs && (r.prefsAt || 0) > (S.prefsAt || 0)) { S.prefs = Object.assign(S.prefs, r.prefs); S.prefsAt = r.prefsAt; bigText(r.prefs); }
 }
 async function push() {
   if (!store || !user) return;
@@ -428,8 +431,8 @@ $('rAa').addEventListener('click', () => {
     '<div class="lblrow">المسافة بين الأسطر</div><div class="seg three" id="lhS">' + [[1.5, 'ضيقة'], [1.7, 'متوسطة'], [1.95, 'واسعة']].map(([v, l]) => '<button data-v="' + v + '" aria-pressed="' + (P.lh == v) + '">' + l + '</button>').join('') + '</div>' +
     '<div class="lblrow">لون الصفحة</div><div class="seg" id="rtS">' + themes.map(([v, l, c]) => '<button data-v="' + v + '" aria-pressed="' + (P.rt === v) + '"><span class="sw" style="background:' + c + '"></span>' + l + '</button>').join('') + '</div>');
   const changed = () => { S.prefsAt = Date.now(); saveLocal(); schedulePush(5000); };
-  const setFs = d => { const b = currentBlock(); P.fs = Math.min(30, Math.max(15, P.fs + d)); $('fsV').textContent = P.fs; $('fsS').style.fontSize = P.fs + 'px'; applyPrefs(); keepBlock(b); changed(); };
-  $('fsM').onclick = () => setFs(-1); $('fsP').onclick = () => setFs(1);
+  const setFs = d => { const b = currentBlock(); P.fs = Math.min(48, Math.max(18, P.fs + d)); $('fsV').textContent = P.fs; $('fsS').style.fontSize = P.fs + 'px'; applyPrefs(); keepBlock(b); changed(); };
+  $('fsM').onclick = () => setFs(-2); $('fsP').onclick = () => setFs(2);
   $('lhS').onclick = e => { const btn = e.target.closest('button'); if (!btn) return; const b = currentBlock(); P.lh = +btn.dataset.v; $('lhS').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === btn)); applyPrefs(); keepBlock(b); changed(); };
   $('rtS').onclick = e => { const btn = e.target.closest('button'); if (!btn) return; P.rt = btn.dataset.v; $('rtS').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === btn)); applyPrefs(); changed(); };
 });

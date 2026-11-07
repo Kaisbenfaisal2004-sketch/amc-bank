@@ -10,7 +10,7 @@
 @font-face{font-family:"Literata";src:url(fonts/literata-latin-400-italic.woff2) format("woff2");font-weight:400;font-style:italic;font-display:swap}
 @font-face{font-family:"Literata";src:url(fonts/literata-latin-600-italic.woff2) format("woff2");font-weight:500 700;font-style:italic;font-display:swap}
 *,*::before,*::after{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;font-size:19px}
 body{margin:0}
 [hidden]{display:none!important}
 img{max-width:100%}
@@ -39,7 +39,7 @@ img{max-width:100%}
 #reader[data-rt="dark"]{--r-bg:#0e1012;--r-fg:#d6d8d9;--r-muted:#878f96;--r-line:#262b30;--r-gl:#9cc0f0}
 
 html,body{height:100%}
-body{background:var(--bg);color:var(--fg);font-family:var(--ui);font-size:16px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--fg);font-family:var(--ui);font-size:1rem;line-height:1.55;-webkit-tap-highlight-color:transparent}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
 button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
@@ -107,7 +107,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .set{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .step{display:flex;align-items:center;gap:6px}
-.step button{width:36px;height:36px;border-radius:10px;background:var(--sunk);font-size:1.2rem;font-weight:600}
+.step button{width:44px;height:44px;border-radius:10px;background:var(--sunk);font-size:1.2rem;font-weight:600}
 .step b{min-width:64px;text-align:center}
 .tip{font-size:.8rem;color:var(--muted);line-height:1.6}
 .empty{padding:28px 16px;text-align:center;color:var(--muted)}
@@ -122,7 +122,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .rprog{position:absolute;inset:auto 0 -1px 0;height:2px;background:transparent}
 .rprog u{display:block;height:100%;background:var(--r-gl);text-decoration:none;transition:width .3s}
 #rscroll{position:relative;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-#rtext{direction:ltr;max-width:38rem;margin:0 auto;padding-left:max(22px,env(safe-area-inset-left,0px));padding-right:max(22px,env(safe-area-inset-right,0px));padding-block:28px 140px;font-family:var(--book);font-size:var(--fs,20px);line-height:var(--lh,1.7);hyphens:auto;-webkit-hyphens:auto}
+#rtext{direction:ltr;max-width:38rem;margin:0 auto;padding-left:max(22px,env(safe-area-inset-left,0px));padding-right:max(22px,env(safe-area-inset-right,0px));padding-block:28px 140px;font-family:var(--book);font-size:var(--fs,26px);line-height:var(--lh,1.7);hyphens:auto;-webkit-hyphens:auto}
 #rtext .chn{font-family:var(--ui);font-size:.72em;letter-spacing:.2em;text-transform:uppercase;color:var(--r-gl);text-align:center;margin:1.2em 0 .3em;font-weight:600}
 #rtext h2{font-size:1.45em;line-height:1.25;text-align:center;margin:0 0 1.4em;font-weight:700;text-wrap:balance}
 #rtext p{margin:0;text-indent:1.3em}
@@ -132,10 +132,10 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 #rtext figure{margin:1.4em -6px;text-align:center}
 #rtext figure img{max-width:100%;max-height:78vh;border-radius:6px}
 #rtext figcaption{font-size:.72em;font-style:italic;color:var(--r-muted);margin-top:.4em}
-.cend{direction:rtl;font-family:var(--ui);margin-top:2.4em;padding-top:1.4em;border-top:1px solid var(--r-line);display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;font-size:16px}
+.cend{direction:rtl;font-family:var(--ui);margin-top:2.4em;padding-top:1.4em;border-top:1px solid var(--r-line);display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;font-size:1rem}
 .cend button{padding:11px 16px;border-radius:12px;background:color-mix(in srgb,var(--r-fg) 8%,transparent);font-weight:600}
 .cend button.pri{background:var(--r-gl);color:var(--r-bg)}
-.fin{direction:rtl;font-family:var(--ui);text-align:center;margin-top:2.4em;padding:20px;border-radius:14px;background:color-mix(in srgb,var(--r-gl) 10%,transparent);font-size:16px}
+.fin{direction:rtl;font-family:var(--ui);text-align:center;margin-top:2.4em;padding:20px;border-radius:14px;background:color-mix(in srgb,var(--r-gl) 10%,transparent);font-size:1rem}
 .fin b{display:block;font-size:1.2rem;margin-bottom:4px}
 
 .timer{position:fixed;z-index:25;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);direction:rtl;display:flex;align-items:center;gap:10px;padding:8px 14px 8px 10px;border-radius:99px;background:var(--surface);color:var(--fg);border:1px solid var(--line);box-shadow:0 8px 28px -10px rgb(0 0 0 / .35);font-size:.9rem;white-space:nowrap}
@@ -182,7 +182,7 @@ button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(-
 .signin h2{margin:0;font-size:1.1rem}
 .signin form{display:flex;flex-direction:column;gap:6px;margin-top:6px}
 .signin label{font-size:.85rem;color:var(--muted)}
-.signin input{font:inherit;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.signin input{font:inherit;font-size:1rem;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
 .btn.wide{width:100%;justify-self:stretch;align-self:stretch;margin-top:8px;padding:12px}
 .btn.small{padding:8px 14px;font-size:.88rem;cursor:pointer}
 .link{color:var(--accent);font-size:.88rem;padding:6px 0;align-self:flex-start}
