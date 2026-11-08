@@ -417,10 +417,11 @@ function validateBank(b) {
   }
   return '';
 }
-async function importFile(file) {
-  const msg = $('imp-msg'); msg.hidden = false; msg.textContent = 'Reading ' + file.name + '…';
+async function importText(text, label) {
+  const msg = $('imp-msg'); msg.hidden = false; msg.textContent = 'Reading ' + label + '…';
+  show('account');
   try {
-    const b = JSON.parse(await file.text());
+    let b; try { b = JSON.parse(text); } catch (x) { throw new Error('This is not a question bank file.'); }
     const bad = validateBank(b); if (bad) throw new Error('This file is not a valid question bank (' + bad + ').');
     msg.textContent = 'Uploading ' + b.title + ' to your account…';
     await sync.importBank(b);
@@ -432,6 +433,15 @@ async function importFile(file) {
     msg.textContent = (e && e.code && e.code.includes('permission')) ? 'Your account is not allowed to add subjects.' : 'Could not add the subject: ' + (e.message || e.code || e);
   }
 }
+async function importFile(file) { return importText(await file.text(), file.name); }
+// A subject file's text pasted anywhere in the app (copied on a computer) is added too.
+document.addEventListener('paste', e => {
+  if (!user || !$('quiz').hidden) return;
+  if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+  const t = e.clipboardData && e.clipboardData.getData('text');
+  if (!t || t.charAt(0) !== '{' || t.indexOf('"chapters"') < 0) return;
+  e.preventDefault(); importText(t, 'pasted subject');
+});
 $('imp-file').addEventListener('change', e => { const f = e.target.files[0]; if (f) importFile(f); e.target.value = ''; });
 
 /* ---------- start ---------- */
