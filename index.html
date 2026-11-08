@@ -53,6 +53,11 @@
   <header class="top slim"><div class="wrap"><div class="eyebrow">AMC MCQ · Question Bank</div><h1>Account</h1></div></header>
   <div class="wrap body">
     <div class="card">
+      <div class="lbl">Text size</div>
+      <div class="tsz" id="tsz" role="group" aria-label="Text size"></div>
+      <p class="tsz-preview">This is how questions and explanations will look.</p>
+    </div>
+    <div class="card">
       <div class="acc-status"><span class="dot" id="syncdot"></span><span id="syncmsg">Saved on this device</span></div>
       <div id="acc-out" hidden>
         <form id="acc-form" class="acc-form" novalidate>
@@ -93,7 +98,10 @@
     <div class="wrap">
       <button class="qback" id="back" aria-label="Back">‹ <span id="chnum">Chapter</span></button>
       <b id="qcount">Q1 / 1</b>
-      <button class="qcopy" id="copy" title="Copy the question and its options">⧉ Copy</button>
+      <span class="qtools">
+        <button class="qsize" id="qsize" title="Text size" aria-label="Change text size">A<small>A</small></button>
+        <button class="qcopy" id="copy" title="Copy the question and its options" aria-label="Copy the question and its options">⧉<span class="lbl-t"> Copy</span></button>
+      </span>
     </div>
   </header>
   <div class="dots" id="dots"></div>

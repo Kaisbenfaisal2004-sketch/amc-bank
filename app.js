@@ -59,6 +59,21 @@ function setSyncState(s) {
 window.addEventListener('online', () => syncState !== 'local' && setSyncState('pending'));
 window.addEventListener('offline', () => syncState !== 'local' && setSyncState('offline'));
 
+/* ---------- text size (kept per device, survives sign-out) ---------- */
+const TS = [{ v: 1, n: 'Normal' }, { v: 1.15, n: 'Large' }, { v: 1.3, n: 'Larger' }, { v: 1.45, n: 'Extra large' }, { v: 1.6, n: 'Huge' }];
+let tsi = (() => { try { const v = localStorage.getItem('ui:textsize'); if (v !== null && TS[+v]) return +v; } catch (e) {} return innerWidth <= 600 ? 1 : 0; })();
+function applyTextSize(toastIt) {
+  document.documentElement.style.setProperty('--ts', TS[tsi].v);
+  try { localStorage.setItem('ui:textsize', String(tsi)); } catch (e) {}
+  const g = document.getElementById('tsz');
+  if (g) g.innerHTML = TS.map((t, i) => '<button data-i="' + i + '" class="' + (i === tsi ? 'on' : '') + '" aria-pressed="' + (i === tsi) + '" title="' + t.n + '">A</button>').join('');
+  if (g) g.querySelectorAll('button').forEach((b, i) => { b.style.fontSize = (13 + i * 3) + 'px'; });
+  if (toastIt) toast('Text size: ' + TS[tsi].n);
+}
+document.getElementById('tsz').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { tsi = +b.dataset.i; applyTextSize(false); } });
+document.getElementById('qsize').addEventListener('click', () => { tsi = (tsi + 1) % TS.length; applyTextSize(true); });
+applyTextSize(false);
+
 /* ---------- motion ---------- */
 const REDUCE = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 function replay(el, cls) { if (!el || REDUCE) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
