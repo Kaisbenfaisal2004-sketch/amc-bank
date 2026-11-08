@@ -9,7 +9,7 @@
   color-scheme:light;
   --navy:#1E3A8A; --navy-2:#2B4AA6; --navy-soft:#EEF2FF;
   --bg:#F6F7FB; --card:#FFFFFF; --line:#E5E7EB; --line-2:#F1F2F5;
-  --ink:#111827; --muted:#6B7280; --faint:#9CA3AF;
+  --ink:#000000; --muted:#1F2937; --faint:#4B5563;
   --ok:#16A34A; --ok-soft:#F0FDF4; --bad:#DC2626; --bad-soft:#FEF2F2; --warn:#D97706;
   --f:"Inter Tight",-apple-system,"Segoe UI",system-ui,sans-serif;
 }
@@ -17,7 +17,7 @@
 [hidden]{display:none!important}
 html,body{background:var(--bg)}
 html{font-size:calc(16px * var(--ts, 1))}
-body{margin:0;color:var(--ink);font-family:var(--f);font-size:1.0625rem;line-height:1.5;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+body{margin:0;color:var(--ink);font-family:var(--f);font-size:1.0625rem;line-height:1.5;-webkit-tap-highlight-color:transparent}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--navy)}
 button{font:inherit;color:inherit;cursor:pointer}
 .wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -211,3 +211,14 @@ details.ev.reveal{animation:reveal .4s cubic-bezier(.2,.8,.2,1) .22s both}
 .tsz button.on{border-color:var(--navy);background:var(--navy-soft);color:var(--navy)}
 .tsz-preview{margin:10px 0 0;font-size:1.25rem;line-height:1.55;color:var(--ink)}
 .card + .card{margin-top:12px}
+
+/* ---------- deep, heavy reading text ---------- */
+body{font-weight:500}
+.stem{font-weight:600;color:#000}
+.op{font-weight:600;color:#000}
+.op .lt{border-width:2px;border-color:#374151;color:#111}
+.exp .rule,.exp .ans,.tip,.evb,.evb blockquote{font-weight:500;color:#000}
+.row .t{font-weight:700;color:#000}
+.row .sub,.lede,.note-sm,.who,.acc-help,.lbl,.src{color:#1F2937;font-weight:600}
+.op.dim{opacity:.82}
+.tsz-preview{font-weight:600;color:#000}
