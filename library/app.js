@@ -13,7 +13,7 @@ const ICON_PLAY = '<svg viewBox="0 0 14 14" fill="currentColor"><path d="M3 1.5v
 const LS_STATE = 'kais_library_v1', LS_LIB = 'kais_library_list', LS_VER = 'kais_library_cached';
 
 /* ---------- state ---------- */
-const blank = () => ({ v: 1, goal: 30, goalAt: 0, days: {}, books: {}, prefs: { fs: 26, lh: 1.7, rt: 'auto' }, ui: { open: null } });
+const blank = () => ({ v: 1, goal: 30, goalAt: 0, days: {}, books: {}, prefs: { fs: 26, lh: 1.7, rt: 'auto', fw: 600 }, ui: { open: null } });
 let S = blank();
 try { const raw = localStorage.getItem(LS_STATE); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch (e) {}
 S.prefs = Object.assign(blank().prefs, S.prefs || {}); S.ui = S.ui || { open: null };
@@ -269,7 +269,7 @@ let readerBook = null, curCh = 0, blocksEls = [], paused = true, started = false
 function applyPrefs() {
   const r = $('reader'), t = $('rtext');
   if (S.prefs.rt === 'auto') r.removeAttribute('data-rt'); else r.setAttribute('data-rt', S.prefs.rt);
-  t.style.setProperty('--fs', S.prefs.fs + 'px'); t.style.setProperty('--lh', S.prefs.lh);
+  t.style.setProperty('--fs', S.prefs.fs + 'px'); t.style.setProperty('--lh', S.prefs.lh); t.style.setProperty('--fw', S.prefs.fw || 600);
 }
 async function openBook(id) {
   if (!LIB || !LIB.find(b => b.id === id)) return;
@@ -428,12 +428,14 @@ $('rAa').addEventListener('click', () => {
   const themes = [['auto', 'تلقائي', 'var(--surface)'], ['light', 'أبيض', '#ffffff'], ['sepia', 'بيج', '#f2e8d5'], ['dark', 'داكن', '#0e1012']];
   openSheet('<h3>شكل القراءة</h3>' +
     '<div class="lblrow">حجم الخط</div><div class="row"><div class="step"><button id="fsM" aria-label="أصغر">−</button><b class="num" id="fsV">' + P.fs + '</b><button id="fsP" aria-label="أكبر">+</button></div><span style="font-family:var(--book);font-size:' + P.fs + 'px" class="ltr" id="fsS">Aa</span></div>' +
+    '<div class="lblrow">سُمك الخط</div><div class="seg three" id="fwS">' + [[400, 'عادي'], [600, 'سميك'], [700, 'أسمك']].map(([v, l]) => '<button data-v="' + v + '" aria-pressed="' + ((P.fw || 600) == v) + '" style="font-weight:' + v + '">' + l + '</button>').join('') + '</div>' +
     '<div class="lblrow">المسافة بين الأسطر</div><div class="seg three" id="lhS">' + [[1.5, 'ضيقة'], [1.7, 'متوسطة'], [1.95, 'واسعة']].map(([v, l]) => '<button data-v="' + v + '" aria-pressed="' + (P.lh == v) + '">' + l + '</button>').join('') + '</div>' +
     '<div class="lblrow">لون الصفحة</div><div class="seg" id="rtS">' + themes.map(([v, l, c]) => '<button data-v="' + v + '" aria-pressed="' + (P.rt === v) + '"><span class="sw" style="background:' + c + '"></span>' + l + '</button>').join('') + '</div>');
   const changed = () => { S.prefsAt = Date.now(); saveLocal(); schedulePush(5000); };
   const setFs = d => { const b = currentBlock(); P.fs = Math.min(48, Math.max(18, P.fs + d)); $('fsV').textContent = P.fs; $('fsS').style.fontSize = P.fs + 'px'; applyPrefs(); keepBlock(b); changed(); };
   $('fsM').onclick = () => setFs(-2); $('fsP').onclick = () => setFs(2);
   $('lhS').onclick = e => { const btn = e.target.closest('button'); if (!btn) return; const b = currentBlock(); P.lh = +btn.dataset.v; $('lhS').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === btn)); applyPrefs(); keepBlock(b); changed(); };
+  $('fwS').onclick = e => { const btn = e.target.closest('button'); if (!btn) return; P.fw = +btn.dataset.v; $('fwS').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === btn)); applyPrefs(); changed(); };
   $('rtS').onclick = e => { const btn = e.target.closest('button'); if (!btn) return; P.rt = btn.dataset.v; $('rtS').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === btn)); applyPrefs(); changed(); };
 });
 function keepBlock(b) { requestAnimationFrame(() => { const el = blocksEls.find(e => +e.dataset.i >= b); if (el) $('rscroll').scrollTop = el.offsetTop - 12; }); }
