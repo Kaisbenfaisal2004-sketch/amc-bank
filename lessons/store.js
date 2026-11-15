@@ -81,6 +81,20 @@ export async function createStore() {
       await Promise.race([fb.setDoc(fb.doc(db, 'lessons', id), L.meta), timeout(60000)]);
     },
 
+    // remove a lesson: the header goes first, so a half-finished delete never shows a broken lesson
+    async deleteLesson(id, onStep) {
+      await Promise.race([(() => { const bt = fb.writeBatch(db); bt.delete(fb.doc(db, 'lessons', id)); return bt.commit(); })(), timeout(60000)]);
+      for (const sub of ['parts', 'images']) {
+        const s = await fb.getDocs(fb.collection(db, 'lessons', id, sub));
+        const refs = s.docs.map(d => d.ref);
+        for (let i = 0; i < refs.length; i += 400) {
+          const bt = fb.writeBatch(db); refs.slice(i, i + 400).forEach(r => bt.delete(r));
+          onStep && onStep(sub === 'parts' ? 'النص' : 'الصور');
+          await Promise.race([bt.commit(), timeout(120000)]);
+        }
+      }
+    },
+
     watchState(cb) {
       if (unsub) { unsub(); unsub = null; }
       const u = auth.currentUser; if (!u) return;

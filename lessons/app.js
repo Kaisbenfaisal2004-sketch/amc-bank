@@ -205,6 +205,7 @@ function lessonRow(m) {
   return el;
 }
 function renderHome() {
+  try { fillDelete(); } catch (e) {}
   if (!LIST) return;
   const q = ($('q').value || '').trim().toLowerCase();
   const all = LIST.slice().sort((a, b) => byName(a.subject, b.subject) || (a.order || 0) - (b.order || 0) || byName(a.title, b.title));
@@ -224,6 +225,32 @@ function renderHome() {
   requestAnimationFrame(() => requestAnimationFrame(() => L.querySelectorAll('.ring .pr').forEach(c => { c.style.strokeDashoffset = c.dataset.to; })));
 }
 $('q').addEventListener('input', renderHome);
+
+/* ---------- delete a lesson (two taps, no pop-up) ---------- */
+function fillDelete() {
+  const sel = $('delSel'); if (!sel || !LIST) return;
+  const keep = sel.value;
+  sel.innerHTML = '<option value="">اختر الشرح</option>' + LIST.slice().sort((a, b) => (a.subject || '').localeCompare(b.subject || '') || (a.order || 0) - (b.order || 0))
+    .map(m => '<option value="' + m.id + '">' + (m.subject ? m.subject + ' · ' : '') + String(m.title || m.id).replace(/</g, '&lt;') + '</option>').join('');
+  sel.value = keep;
+}
+let delArmed = null;
+$('delSel').addEventListener('change', () => { delArmed = null; $('delBtn').textContent = 'احذف'; });
+$('delBtn').addEventListener('click', async () => {
+  const id = $('delSel').value, msg = $('delMsg'); msg.hidden = false;
+  if (!id) { msg.textContent = 'اختر الشرح أولًا.'; return; }
+  if (!navigator.onLine) { msg.textContent = 'الحذف يحتاج إنترنت.'; return; }
+  const m = (LIST || []).find(x => x.id === id), name = m ? m.title : id;
+  if (delArmed !== id) { delArmed = id; $('delBtn').textContent = 'اضغط مرة أخرى للتأكيد'; msg.textContent = 'سيُحذف «' + name + '» من كل أجهزتك، ولا يمكن إرجاعه.'; return; }
+  delArmed = null; $('delBtn').textContent = 'احذف';
+  try {
+    msg.textContent = 'جارٍ حذف «' + name + '»…';
+    await store.deleteLesson(id, step => { msg.textContent = 'جارٍ حذف «' + name + '»: ' + step; });
+    const ver = lsGet(LS_VER, {}); delete ver[id]; lsSet(LS_VER, ver); delete PAGES[id];
+    msg.textContent = 'حُذف «' + name + '».';
+  } catch (x) { msg.textContent = 'تعذّر الحذف (' + ((x && x.code) || 'خطأ') + '). أعد المحاولة.'; }
+  await refreshList();
+});
 
 /* ---------- import a lesson file ---------- */
 $('impFile').addEventListener('change', async e => {
