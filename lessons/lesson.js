@@ -196,8 +196,36 @@ function wireReading() {
   apply();
 }
 
+// the top bar (title + progress): hidden while reading down, back as soon as you scroll up a little
+function wireBar() {
+  const bar = document.querySelector('#reader .bar');
+  if (!bar) return;
+  const css = document.createElement('style');
+  css.textContent = '.app{overflow-x:clip!important}' +
+    '#reader .bar{transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s}' +
+    '#reader .bar.kHide{transform:translateY(calc(-100% - 12px))}' +
+    '#reader .bar.kFloat{box-shadow:0 8px 18px -12px rgba(0,0,0,.45)}';
+  document.head.appendChild(css);
+  let last = scrollY, acc = 0, tick = false;
+  const run = () => {
+    tick = false;
+    const y = scrollY, d = y - last; last = y;
+    if (document.querySelector('#reader')?.hidden) return;
+    if (y < 80) { bar.classList.remove('kHide', 'kFloat'); acc = 0; return; }
+    bar.classList.add('kFloat');
+    if ((acc > 0) !== (d > 0)) acc = 0;
+    acc += d;
+    if (acc > 24) bar.classList.add('kHide');
+    else if (acc < -12) bar.classList.remove('kHide');
+  };
+  addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(run); } }, { passive: true });
+  // opening a chapter or jumping to a topic shows the bar again
+  document.addEventListener('click', e => { if (e.target.closest && e.target.closest('.gt,.go,.jump button,#next,#toc button,#toc a')) setTimeout(() => bar.classList.remove('kHide'), 50); });
+}
+
 function wireV2() {
   try { wireReading(); } catch (e) {}
+  try { wireBar(); } catch (e) {}
   const it = item(); it.last = Date.now(); it.at = Date.now(); saveLocal(); schedulePush(1500);
   const flush = () => { saveLocal(); push(); };
   addEventListener('pagehide', flush);
