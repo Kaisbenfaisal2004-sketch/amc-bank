@@ -138,7 +138,66 @@ function mediaToBlobs() {
   });
 }
 
+// reading size and weight for v2 lessons: one setting for every lesson on this device
+const READ_KEY = 'kais-read', ZOOMS = [1, 1.08, 1.16, 1.25, 1.35, 1.45, 1.6];
+function readPrefs() {
+  let r = { z: 2, bold: true };
+  try { Object.assign(r, JSON.parse(localStorage.getItem(READ_KEY)) || {}); } catch (e) {}
+  r.z = Math.max(0, Math.min(ZOOMS.length - 1, r.z | 0));
+  return r;
+}
+function wireReading() {
+  let r = readPrefs();
+  const css = document.createElement('style'); css.id = 'kRead'; document.head.appendChild(css);
+  const apply = () => {
+    css.textContent =
+      ':root{--fs:18px!important}' +
+      '#pages{zoom:' + ZOOMS[r.z] + '}' +
+      (r.bold ? '#pages{font-weight:500}#pages .qa p,#pages figcaption,#pages .wid{font-weight:500}' : '') +
+      '.tools{flex-wrap:wrap}.tools .kz{min-width:3.2em;text-align:center;font-weight:700}' +
+      '.tools #kBold[aria-pressed="true"]{background:var(--ink,#15283a);color:var(--bg,#fff);border-color:var(--ink,#15283a)}' +
+      '#kAa{font-weight:700;font-size:15px;letter-spacing:0}';
+    const z = document.getElementById('kZ'); if (z) z.textContent = Math.round(ZOOMS[r.z] * 100) + '%';
+    const b = document.getElementById('kBold'); if (b) b.setAttribute('aria-pressed', r.bold ? 'true' : 'false');
+  };
+  const save = () => { try { localStorage.setItem(READ_KEY, JSON.stringify(r)); } catch (e) {} };
+  // keep the reading place while the text grows or shrinks
+  const keep = fn => {
+    const ps = Array.from(document.querySelectorAll('#pages p, #pages h3, #pages figure, #pages .wid'));
+    const a = ps.find(el => el.getBoundingClientRect().top > 90);
+    const before = a ? a.getBoundingClientRect().top : 0;
+    fn();
+    if (a) scrollBy(0, a.getBoundingClientRect().top - before);
+  };
+  const tools = document.querySelector('.tools');
+  if (tools) {
+    tools.innerHTML = '<span>حجم الخط</span><button id="fsm" aria-label="تصغير الخط">أ-</button><span class="kz" id="kZ"></span><button id="fsp" aria-label="تكبير الخط">أ+</button><button id="kBold" aria-pressed="true" aria-label="خط أسمك">أسمك</button>';
+  }
+  document.addEventListener('click', e => {
+    const t = e.target.closest && e.target.closest('#fsm,#fsp,#kBold');
+    if (!t) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    keep(() => {
+      if (t.id === 'fsp') r.z = Math.min(ZOOMS.length - 1, r.z + 1);
+      else if (t.id === 'fsm') r.z = Math.max(0, r.z - 1);
+      else r.bold = !r.bold;
+      apply();
+    });
+    save();
+  }, true);
+  // a direct button in the top bar that opens the menu at the size controls
+  const toc = document.getElementById('tocB');
+  if (toc && !document.getElementById('kAa')) {
+    const aa = document.createElement('button');
+    aa.className = 'icon'; aa.id = 'kAa'; aa.textContent = 'أأ'; aa.setAttribute('aria-label', 'حجم الخط وسُمكه');
+    aa.addEventListener('click', () => { toc.click(); setTimeout(() => { const tl = document.querySelector('.tools'); if (tl) tl.scrollIntoView({ block: 'nearest' }); }, 250); });
+    toc.parentNode.insertBefore(aa, toc);
+  }
+  apply();
+}
+
 function wireV2() {
+  try { wireReading(); } catch (e) {}
   const it = item(); it.last = Date.now(); it.at = Date.now(); saveLocal(); schedulePush(1500);
   const flush = () => { saveLocal(); push(); };
   addEventListener('pagehide', flush);
