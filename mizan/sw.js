@@ -1,6 +1,6 @@
 // Offline copy of ميزان الحجج itself (the map, the examinations and your notes are kept by Firebase on the device, not here).
 // Answers from the stored copy straight away, and refreshes it in the background when online.
-const CACHE = 'mizan-v1';
+const CACHE = 'mizan-v2';
 const SHELL = [
   './', 'index.html', 'app.css', 'app.js', 'store.js', '../config.js', '../vendor/firebase.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',

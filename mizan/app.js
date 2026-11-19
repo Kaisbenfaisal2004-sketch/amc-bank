@@ -171,7 +171,6 @@ function viewHome() {
   let h = '<section class="ledger"><div class="lbl">ما فحصناه من الحجج</div><div class="big">' + done + ' <small>من ' + total + '</small></div>' +
     '<div class="strip">' + strip + '</div>' +
     '<div class="legend"><span><i style="background:var(--acc)"></i>فُحصت</span><span><i style="background:var(--prog)"></i>قيد الفحص</span><span><i style="background:var(--brass)"></i>قرأتها (' + read + ')</span><span>سجّلت موقفك من ' + stance + '</span></div></section>';
-  if (!S.beliefs || !S.beliefs.now) h += '<a class="next brass" href="#beliefs"><span><small>قبل أن تبدأ</small>اكتب قناعاتك الحالية ومعاييرك، لتقارن بها بعد كل حجة.</span><span class="go">ابدأ</span></a>';
   const nxt = A.find(a => statusOf(a.id) === 'done' && !(S.items[a.id] && S.items[a.id].read)) || A.find(a => statusOf(a.id) !== 'done');
   if (nxt) h += '<a class="next" href="#arg-' + nxt.id + '"><span><small>' + (statusOf(nxt.id) === 'done' ? 'فحص جاهز لم تقرأه' : 'الحجة التالية في الترتيب') + '</small>' + nxt.id + '. ' + esc(nxt.title) + '</span><span class="go">افتح</span></a>';
   h += '<input class="search" id="q" type="search" placeholder="ابحث في الحجج أو الكتب" aria-label="بحث" value="' + esc(Q.q) + '"><div id="ledger">' + ledger(Q.q) + '</div>';
@@ -282,31 +281,6 @@ function viewMethod() {
     '<section class="card"><h2>أحكام المقدمات</h2><div class="vlist">' + Object.values(VERDICTS).map(v => '<span class="verdict" style="background:var(' + v[1] + ')">' + v[0] + '</span>').join('') + '</div>' +
     '<p class="tip" style="margin-top:12px">مع كل حكم نذكر المصدر ودرجة الثقة. وفي الأسئلة الكبرى، مثل وجود الخالق، لا يصدر حكم نهائي: نرتب الحجج، والحكم لك.</p></section>';
 }
-function viewBeliefs() {
-  const b = S.beliefs || {};
-  const f = (id, label, hint) => '<div class="field"><label for="b_' + id + '">' + label + '</label><p class="tip">' + hint + '</p><textarea id="b_' + id + '">' + esc(b[id] || '') + '</textarea></div>';
-  const hist = S.history.slice().reverse();
-  return '<section><h1>قناعاتي ومعاييري</h1><p>اكتب هنا قبل أن تبدأ، ثم ارجع بعد كل مستوى. الهدف أن تطبق المعيار نفسه على الحجج التي توافقك والتي تخالفك، وأن ترى كيف يتغير موقفك مع الوقت.</p></section>' +
-    '<section class="card">' + f('now', 'ما أعتقده الآن', 'عن وجود الخالق، والنبوة، والإسلام. بكلماتك أنت.') +
-    f('why', 'لماذا أعتقد ذلك', 'ما الأسباب الحقيقية: دليل، أم تربية، أم تجربة، أم خليط؟') +
-    f('change', 'ما الذي يغيّر رأيي لو ثبت', 'اكتب شيئًا محددًا. إن لم تجد شيئًا، فاكتب ذلك أيضًا.') +
-    f('criteria', 'معاييري لقبول حجة', 'مثلًا: لا أقبل مقدمة علمية دون مصدر متخصص، ولا نقلًا دون الرجوع إلى أصله.') +
-    '<div class="actions"><button class="btn" id="bsv" type="button">احفظ</button><button class="btn ghost" id="bsnap" type="button">احفظ نسخة اليوم في السجل</button><span class="saved" id="bsvs">' + (b.at ? 'آخر حفظ: ' + fmtDate(b.at) : '') + '</span></div></section>' +
-    '<section class="card hist"><h2>سجل قناعاتي</h2>' + (hist.length ? hist.map(x => '<details><summary>' + fmtDate(x.at) + '</summary><p><b>ما أعتقده:</b> ' + esc(x.now) + '</p><p><b>لماذا:</b> ' + esc(x.why) + '</p><p><b>ما يغيّر رأيي:</b> ' + esc(x.change) + '</p><p><b>معاييري:</b> ' + esc(x.criteria) + '</p></details>').join('') : '<p class="tip">لا توجد نسخ بعد. احفظ نسخة اليوم لترى لاحقًا كيف تغيّر موقفك.</p>') + '</section>';
-}
-function bindBeliefs() {
-  const read = () => ({ now: $('b_now').value, why: $('b_why').value, change: $('b_change').value, criteria: $('b_criteria').value });
-  const go = snap => {
-    const cur = read(), now = Date.now();
-    S.beliefs = Object.assign({}, cur, { at: now });
-    if (snap) { S.history.push(Object.assign({ at: now }, cur)); S.history = S.history.slice(-50); }
-    saveLocal(); push();
-    $('bsvs').textContent = snap ? 'حُفظت نسخة اليوم في السجل' : 'حُفظ' + (user ? '' : ' على هذا الجهاز');
-    if (snap) render();
-  };
-  $('bsv').addEventListener('click', () => go(false));
-  $('bsnap').addEventListener('click', () => go(true));
-}
 function viewGlossary() {
   if (!C) return viewHome();
   return '<section><h1>المسرد</h1><p class="tip">شرح مبسط لكل مصطلح يمر في الفحوص. يزداد مع كل حجة نفحصها.</p></section>' +
@@ -340,7 +314,6 @@ function render() {
   $('set').hidden = r !== 'home';
   if (r.startsWith('arg-')) { const id = parseInt(r.slice(4), 10); v.innerHTML = viewArg(id); if (C && argsList().some(x => x.id === id)) bindArg(id); return; }
   if (r === 'method') { v.innerHTML = viewMethod(); return; }
-  if (r === 'beliefs') { v.innerHTML = viewBeliefs(); bindBeliefs(); return; }
   if (r === 'glossary') { v.innerHTML = viewGlossary(); const g = $('gq'); if (g) g.addEventListener('input', e => { Q.gq = e.target.value; $('glist').innerHTML = glist(Q.gq); }); return; }
   if (r === 'books') { v.innerHTML = viewBooks(); return; }
   v.innerHTML = viewHome();
