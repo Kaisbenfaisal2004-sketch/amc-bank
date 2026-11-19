@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ميزان الحجج</title>
+<meta name="theme-color" content="#1e5d57">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="الميزان">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="bar">
+  <div class="barin">
+    <div class="brand"><a href="#home">ميزان الحجج</a><div class="sync" id="sync"><i></i><span>محفوظ على هذا الجهاز</span></div></div>
+    <nav class="tabs" aria-label="أقسام التطبيق">
+      <a href="#home" data-r="home">الخريطة</a>
+      <a href="#method" data-r="method">طريقة الفحص</a>
+      <a href="#beliefs" data-r="beliefs">قناعاتي</a>
+      <a href="#glossary" data-r="glossary">المسرد</a>
+      <a href="#books" data-r="books">الكتب</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="signin" class="card signin" hidden>
+    <h2>سجّل الدخول</h2>
+    <p class="tip">استعمل نفس البريد وكلمة المرور التي تدخل بهما إلى تطبيق الأسئلة.</p>
+    <form id="sForm" novalidate>
+      <label for="sEmail">البريد</label>
+      <input id="sEmail" type="email" dir="ltr" autocomplete="username" required>
+      <label for="sPass">كلمة المرور</label>
+      <input id="sPass" type="password" dir="ltr" autocomplete="current-password" required minlength="6">
+      <button type="submit" class="btn wide" id="sBtn">دخول</button>
+      <button type="button" class="link" id="sReset">نسيت كلمة المرور</button>
+      <p class="err" id="sErr" hidden></p>
+    </form>
+  </section>
+
+  <div id="view"><div class="empty">جارٍ التحميل…</div></div>
+
+  <section class="card set" id="set">
+    <div class="apps">
+      <a href="../"><img src="../icons/icon-192.png" alt="">تطبيق الأسئلة</a>
+      <a href="../lessons/"><img src="../lessons/icons/icon-192.png" alt="">الشروح</a>
+      <a href="../library/"><img src="../library/icons/icon-192.png" alt="">مكتبة الروايات</a>
+    </div>
+    <div id="accIn" hidden>
+      <div class="row2"><span class="tip">الحساب: <b id="accWho" dir="ltr"></b></span><button class="link" id="sOut" type="button">خروج</button></div>
+      <div class="row2">
+        <span>تحديث الخريطة والفحوص</span>
+        <label class="btn ghost small" for="impFile" tabindex="0">اختر الملف</label>
+        <input type="file" id="impFile" accept=".json,application/json" hidden>
+      </div>
+      <p class="tip" id="impMsg" hidden></p>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast" hidden></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
