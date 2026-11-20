@@ -30,8 +30,10 @@ const STEPS = [
   ['أقوى اعتراض', 'أقوى ما يقوله المخالفون الجادون، بأسمائهم ومصادرهم.'],
   ['أقوى جواب على الاعتراض', 'من الكاتب أو من غيره من المدافعين، إن كان جوابهم أقوى.'],
   ['نقطة الحكم', 'ما ثبت، وما بقي مفتوحًا، وما يتوقف على معاييرك أنت، ثم أسئلة تختبر بها فهمك.'],
-  ['المصادر', 'كل ما رجعنا إليه في هذا الفحص، لتراجعه بنفسك.'],
+  ['المصادر', 'كل ما رجعنا إليه في هذا الفحص، ومستوى التحقق من كل مصدر، لتراجعه بنفسك.'],
+  ['المراجعة المستقلة', 'ما وجده مراجعان لم يشاركا في الفحص: أحدهما بعين عالم مسلم، والآخر بعين فيلسوف ملحد، وما تغيّر بسببه.'],
 ];
+const LV = { opened: ['فتحته وقرأت الموضع', 'lv-o'], search: ['من نتيجة بحث', 'lv-s'], memory: ['من معرفتي ولم أتحقق', 'lv-m'], rev: ['فتحه أحد المراجعَين', 'lv-s'] };
 const VERDICTS = {
   true: ['صحيحة', '--v-true'], partial: ['صحيحة لكن ناقصة', '--v-partial'], disputed: ['مختلف فيها بين المختصين', '--v-disputed'],
   outdated: ['قديمة تجاوزها العلم', '--v-outdated'], false: ['خاطئة', '--v-false'], unverified: ['لم نستطع التحقق', '--v-unverified'],
@@ -226,6 +228,7 @@ function stepBody(i, A) {
       (g.premises || []).forEach((p, k) => { h += '<div class="premise"><b>المقدمة ' + (k + 1) + ':</b> ' + esc(p) + '</div>'; });
       if (g.conclusion) h += '<div class="premise c"><b>النتيجة:</b> ' + esc(g.conclusion) + '</div>';
       if (g.quote) h += '<div class="quote">«' + esc(g.quote.text) + '»<cite>' + esc(g.quote.src) + '</cite></div>';
+      if (A.coverage) h += '<details class="hint cover"><summary>حدود قراءتي للكتب</summary>' + rich(A.coverage) + '</details>';
       return h;
     }
     case 2: {
@@ -251,7 +254,14 @@ function stepBody(i, A) {
     }
     case 6: {
       if (!A.sources || !A.sources.length) return null;
-      return '<ul>' + A.sources.map(x => '<li class="src">' + (x.u && /^https:\/\//.test(x.u) ? '<a href="' + esc(x.u) + '" target="_blank" rel="noopener">' + esc(x.t) + '</a>' : esc(x.t)) + '</li>').join('') + '</ul>';
+      return '<ul>' + A.sources.map(x => '<li class="src">' + (x.u && /^https:\/\//.test(x.u) ? '<a href="' + esc(x.u) + '" target="_blank" rel="noopener">' + esc(x.t) + '</a>' : esc(x.t)) + (x.lv && LV[x.lv] ? ' <span class="lv ' + LV[x.lv][1] + '">' + LV[x.lv][0] + '</span>' : '') + '</li>').join('') + '</ul>';
+    }
+    case 7: {
+      const R = A.reviews; if (!R) return null;
+      let h = R.intro ? rich(R.intro) : '';
+      const who = { muslim: 'بعين عالم مسلم', skeptic: 'بعين فيلسوف ملحد' };
+      (R.items || []).forEach(x => { h += '<div class="premise"><b>' + esc(who[x.by] || x.by) + ':</b> ' + esc(x.found) + (x.action ? '<div class="act"><b>ما فعلته:</b> ' + esc(x.action) + '</div>' : '') + '</div>'; });
+      return h;
     }
   }
   return null;
@@ -320,7 +330,16 @@ function viewMethod() {
     '<section class="card"><h2>أحكام المقدمات</h2><div class="vlist">' + Object.values(VERDICTS).map(v => '<span class="verdict" style="background:var(' + v[1] + ')">' + v[0] + '</span>').join('') + '</div>' +
     '<p class="tip" style="margin-top:12px">مع كل حكم نذكر المصدر ودرجة الثقة.</p>' +
     '<h3 style="margin-top:14px">درجات الثقة</h3><ul><li><b>عالية:</b> يقول بالحكم أكثر المختصين، أو يحسمه نص أصلي أو مصدر مباشر.</li><li><b>متوسطة:</b> يقول به كثير من المختصين ويخالفهم كثير، أو تسنده مصادر جيدة غير مباشرة.</li><li><b>منخفضة:</b> المصادر قليلة أو متعارضة، والحكم ترجيح مؤقت.</li></ul></section>' +
+    criteriaCard() +
+    card('قبل أن تبدأ، وفي أثناء الطريق', '<ul><li>«لم أحسم بعد» موقف مشروع، وليس فشلًا.</li><li>لك أن تتوقف أو تبطئ متى أردت، أو تقفز إلى ما يشغلك.</li><li>ما تصل إليه شأنك الخاص، ولست مطالبًا بإعلانه لأحد.</li><li>نحن نفحص حجج كاتب واحد، لا الأديان نفسها. سقوط دليل للكاتب لا يعني سقوط نتيجته، وسقوط اعتراض للملحد لا يثبت الإيمان.</li></ul>') +
     card('قواعد الحياد', '<ul><li>نعامل الطرفين بالعناية نفسها، لكن الوزن يتبع الأدلة. فإن كانت الأدلة في جهة واضحة، نقول ذلك ولا نصنع توازنًا كاذبًا.</li><li>ميزان واحد لكل النصوص والأديان: المعيار الذي يُنقد به نص، يُطبق على غيره.</li><li>في الأسئلة الدينية نعرض منهج علماء الدين نفسه ومنهج الباحثين الأكاديميين معًا.</li><li>إن احتمل الكلام معنيين، نأخذ الأقوى.</li><li>لكل طرف نسأل: ما الذي لو ظهر لغيّر موقفه؟</li></ul>');
+}
+function criteriaCard() {
+  const rows = [];
+  for (const a of argsList()) { const A = C && C.analyses && C.analyses[a.id]; (A && A.summary && A.summary.yours || []).forEach(q => rows.push([a.id, q])); }
+  if (!rows.length) return '';
+  return '<section class="card"><h2>أسئلة المعايير</h2><p class="tip">الخلاف الأعمق غالبًا في المعايير لا في الأدلة. هذه الأسئلة من كل الحجج المفحوصة، مجموعة في مكان واحد لترى ما يتكرر منها.</p><ul>' +
+    rows.map(r => '<li>' + esc(r[1]) + ' <a href="#arg-' + r[0] + '" class="lv">الحجة ' + r[0] + '</a></li>').join('') + '</ul></section>';
 }
 function viewGlossary() {
   if (!C) return viewHome();
