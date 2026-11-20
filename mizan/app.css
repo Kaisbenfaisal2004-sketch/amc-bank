@@ -299,3 +299,8 @@ details.guess>summary{font-weight:400}
 .strip a{background:rgba(0,0,0,.10)}
 @media (prefers-color-scheme: dark){.ledger{background:var(--sunk);color:var(--ink)}.strip a{background:rgba(255,255,255,.12)}}
 .next{background:transparent;border:1px solid var(--line);border-inline-start:3px solid var(--acc)}
+/* sizes follow the chosen reading size: headings and labels scale with the text */
+html{font-size:var(--fs)}
+body{font-size:1rem}
+.claim h1{font-size:1.25rem}
+.stands,.stands p{font-size:1rem}
