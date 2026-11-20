@@ -187,3 +187,9 @@ details.guess[open]>summary::after{content:none}
 .ga{border-top:1px solid var(--line);margin-top:8px}
 .qs{margin-top:14px;background:var(--acc-soft);border-radius:14px;padding:4px 14px 10px}
 .chip.lesson{background:var(--acc-soft);color:var(--acc)}
+.weight{margin-top:12px;background:var(--sunk);border-radius:12px;padding:8px 12px}
+details.hint{margin-top:4px}
+details.hint>summary{cursor:pointer;color:var(--acc);font-size:.85rem}
+details.hint p{margin:.3em 0;font-size:.92rem;color:var(--muted)}
+a.dep{display:block}
+.dn{display:block;font-size:.85rem;color:var(--muted);margin-bottom:6px}

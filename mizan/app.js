@@ -230,10 +230,11 @@ function stepBody(i, A) {
     }
     case 2: {
       if (!A.checks || !A.checks.length) return null;
+      const inf = A.inference ? '<div class="premise c"><b>هل تخرج النتيجة من المقدمات؟</b>' + rich(A.inference) + '</div>' : '';
       return A.checks.map(c => {
         const v = VERDICTS[c.v] || VERDICTS.unverified;
         return '<div class="premise"><b>' + esc(c.p) + '</b><div style="margin-top:6px"><span class="verdict" style="background:var(' + v[1] + ')">' + v[0] + '</span>' + (c.c ? '<span class="src">درجة الثقة: ' + esc(c.c) + '</span>' : '') + '</div>' + rich(c.e) + (c.s ? '<div class="src">المصدر: ' + esc(c.s) + '</div>' : '') + '</div>';
-      }).join('');
+      }).join('') + inf;
     }
     case 3: return A.objection ? rich(A.objection) : null;
     case 4: return A.reply ? rich(A.reply) : null;
@@ -243,7 +244,9 @@ function stepBody(i, A) {
       if (s.established && s.established.length) h += '<h3>ما ثبت</h3>' + li(s.established);
       if (s.open && s.open.length) h += '<h3>ما بقي مفتوحًا</h3>' + li(s.open);
       if (s.yours && s.yours.length) h += '<h3>ما يتوقف على معاييرك</h3>' + li(s.yours);
-      if (A.questions && A.questions.length) h += '<div class="qs"><h3>أسئلة لنفسك</h3><ol>' + A.questions.map(q => '<li>' + esc(q) + '</li>').join('') + '</ol><p class="tip">فكّر فيها قبل أن تكمل. إن لم تقدر، ارجع إلى خطوة «فحص كل مقدمة».</p></div>';
+      if (s.change && s.change.length) h += '<h3>ما الذي يغيّر الحكم؟</h3>' + li(s.change);
+      if (s.weight) h += '<div class="weight"><b>أين يقف ثقل الأدلة:</b> ' + esc(s.weight) + '</div>';
+      if (A.questions && A.questions.length) h += '<div class="qs"><h3>أسئلة لنفسك</h3><ol>' + A.questions.map(q => { const t = typeof q === 'string' ? q : q.q, hn = typeof q === 'string' ? '' : q.hint; return '<li>' + esc(t) + (hn ? '<details class="hint"><summary>تلميح</summary><p>' + esc(hn) + '</p></details>' : '') + '</li>'; }).join('') + '</ol><p class="tip">فكّر فيها قبل أن تكمل. إن لم تقدر، افتح التلميح، أو ناقش جوابك في المحادثة.</p></div>';
       return h || null;
     }
     case 6: {
@@ -254,6 +257,14 @@ function stepBody(i, A) {
   return null;
 }
 let CUR = null;
+function depFacts(id, A) {
+  const name = i => { const r = argsList().find(x => x.id === i); return r ? i + '. ' + r.title : 'الحجة ' + i; };
+  let h = '';
+  if (A && A.depends && A.depends.length) h += '<div class="fact"><span class="k">تعتمد على</span>' + A.depends.map(d => '<a class="dep" href="#arg-' + d.id + '">' + esc(name(d.id)) + '</a>' + (d.note ? '<span class="dn">' + esc(d.note) + '</span>' : '')).join('') + '</div>';
+  const users = Object.entries((C && C.analyses) || {}).filter(([k, v]) => v && (v.depends || []).some(d => d.id === id)).map(([k]) => +k);
+  if (users.length) h += '<div class="fact"><span class="k">تعتمد عليها</span><div class="links">' + users.map(i => '<a href="#arg-' + i + '">الحجة ' + i + '</a>').join('') + '</div></div>';
+  return h;
+}
 function viewArg(id) {
   CUR = id;
   if (!C) return viewHome();
@@ -266,7 +277,8 @@ function viewArg(id) {
     (a.prereq ? '<div class="fact"><span class="k">ما نحتاجه قبلها</span>' + esc(a.prereq) + '</div>' : '') +
     '<div class="fact"><span class="k">أين وردت في الكتب</span>' + esc(a.books) + '</div>' +
     (terms.length ? '<div class="fact"><span class="k">مصطلحات تحتاجها</span><div class="links">' + terms.map(t => '<a href="#glossary" data-term="' + esc(t.t) + '">' + esc(t.t) + '</a>').join('') + '</div></div>' : '') +
-    (A && A.date ? '<div class="fact"><span class="k">آخر تحديث للفحص</span>' + esc(A.date) + '</div>' : '') + '</div></section>';
+    depFacts(id, A) +
+    (A && A.date ? '<div class="fact"><span class="k">تاريخ الفحص</span>' + esc(A.date) + '</div>' : '') + '</div></section>';
   if (!A) h += '<div class="banner">لم نفحص هذه الحجة بعد. حين نفحصها معًا في المحادثة، تصلك نتيجة كل خطوة هنا.</div>';
   h += '<ol class="steps">' + STEPS.map((s, i) => { const b = stepBody(i, A); return '<li class="step' + (b ? '' : ' empty') + '"><div class="sh"><span class="sn">' + (i + 1) + '</span><h3>' + s[0] + '</h3></div><div class="body">' + (b || esc(s[1])) + '</div></li>'; }).join('') + '</ol>';
   h += '<section class="card mybox"><h2>موقفي</h2>' +
@@ -306,7 +318,9 @@ function viewMethod() {
     card('ما يختلف عن دراسة الطب', '<ul><li>ملخص الطب مدقق، فنشرحه كما هو. أما كتب الكاتب فنتحقق من كل معلومة فيها بمصدر متخصص.</li><li>في الطب يكفيك الجواب الصحيح. هنا لا تحكم حكمًا عادلًا حتى ترى أقوى ما يقوله الطرف الآخر.</li><li>في الطب للسؤال قرار واحد. هنا نصل إلى ثلاثة أشياء: ما ثبت، وما بقي مفتوحًا، وما يتوقف على معاييرك. والحكم في الأسئلة الكبرى لك وحدك.</li></ul>') +
     card('كيف تُفحص المقدمة حسب نوعها', '<h3 style="margin-top:14px">المقدمة العلمية</h3><p>نقارنها بما يقوله العلم اليوم في مصادر متخصصة، وننتبه إلى تاريخ المعلومة.</p><h3>النقل عن شخص</h3><p>نرجع إلى المصدر الأصلي: هل نُقل الكلام بدقة، وفي سياقه، وبالمعنى الذي قصده صاحبه؟</p><h3>المقدمة الفلسفية</h3><p>هل هي مسلّمة أصلًا، أم يختلف فيها الفلاسفة؟ وهل تلزم النتيجة منها فعلًا، أم في الطريق قفزة؟</p><h3>الادعاء التاريخي أو النصي</h3><p>نسأل عن المصدر وتاريخ تدوينه، وعن اللغة الأصلية للنص، وعن تفسير أصحاب النص أنفسهم له.</p>') +
     '<section class="card"><h2>أحكام المقدمات</h2><div class="vlist">' + Object.values(VERDICTS).map(v => '<span class="verdict" style="background:var(' + v[1] + ')">' + v[0] + '</span>').join('') + '</div>' +
-    '<p class="tip" style="margin-top:12px">مع كل حكم نذكر المصدر ودرجة الثقة.</p></section>';
+    '<p class="tip" style="margin-top:12px">مع كل حكم نذكر المصدر ودرجة الثقة.</p>' +
+    '<h3 style="margin-top:14px">درجات الثقة</h3><ul><li><b>عالية:</b> يقول بالحكم أكثر المختصين، أو يحسمه نص أصلي أو مصدر مباشر.</li><li><b>متوسطة:</b> يقول به كثير من المختصين ويخالفهم كثير، أو تسنده مصادر جيدة غير مباشرة.</li><li><b>منخفضة:</b> المصادر قليلة أو متعارضة، والحكم ترجيح مؤقت.</li></ul></section>' +
+    card('قواعد الحياد', '<ul><li>نعامل الطرفين بالعناية نفسها، لكن الوزن يتبع الأدلة. فإن كانت الأدلة في جهة واضحة، نقول ذلك ولا نصنع توازنًا كاذبًا.</li><li>ميزان واحد لكل النصوص والأديان: المعيار الذي يُنقد به نص، يُطبق على غيره.</li><li>في الأسئلة الدينية نعرض منهج علماء الدين نفسه ومنهج الباحثين الأكاديميين معًا.</li><li>إن احتمل الكلام معنيين، نأخذ الأقوى.</li><li>لكل طرف نسأل: ما الذي لو ظهر لغيّر موقفه؟</li></ul>');
 }
 function viewGlossary() {
   if (!C) return viewHome();
