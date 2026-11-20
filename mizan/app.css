@@ -318,7 +318,8 @@ body{font-size:1rem}
 .stands,.stands p{font-size:1rem}
 
 /* weight and theme */
-:root{--fw:600;--fb:700}
+:root{--fw:700;--fb:700}
+html[data-weight="b"]{--fw:600;--fb:700}
 html[data-weight="m"]{--fw:500;--fb:700}
 html[data-weight="n"]{--fw:400;--fb:600}
 html[data-font="amiri"]{--fw:400}
@@ -330,3 +331,9 @@ b,strong,h1,h2,h3,.ckb .ckp,details.sec>summary,.premise b{font-weight:var(--fb)
 .sheet .pan{max-height:92vh;overflow-y:auto}
 .sheet h2{margin-top:12px}
 .sheet h2:first-child{margin-top:0}
+
+html[data-theme="cream"]{--paper:#f4ead3;--surface:#f4ead3;--sunk:#eadcbc;--ink:#14100a;--muted:#4f4533;--line:#d9c9a4;--acc:#1b5650;--acc-soft:#dde3cf;--brass:#8a5f12;--brass-soft:#ecd9b0}
+html[data-theme="cream"] .strip a{background:rgba(60,40,0,.13)}
+html[data-weight="x"] h1{font-size:1.35rem}
+.themes,.weights{flex-wrap:wrap}.themes button,.weights button{min-width:calc(50% - 4px)}
+details.stp>summary h3,details.sec>summary,.claim h1{font-weight:var(--fb)}details.stp>summary h3{font-size:1.08rem}

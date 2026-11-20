@@ -23,11 +23,11 @@ function applyRead() {
   let r = {}; try { r = JSON.parse(localStorage.getItem(LS_READ) || '{}') || {}; } catch (e) {}
   document.documentElement.dataset.font = FONTS.some(f => f[0] === r.f) ? r.f : 'naskh';
   document.documentElement.dataset.size = String(r.s >= 1 && r.s <= 5 ? r.s : 3);
-  const t = r.t || 'light';
+  const t = ['cream', 'light', 'dark', 'auto'].includes(r.t) ? r.t : 'cream';
   document.documentElement.dataset.theme = t === 'auto' ? (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : t;
-  document.documentElement.dataset.weight = r.w === 'n' || r.w === 'm' ? r.w : 'b';
+  document.documentElement.dataset.weight = ['b', 'm', 'n'].includes(r.w) ? r.w : 'x';
   document.documentElement.dataset.themeSel = t;
-  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = document.documentElement.dataset.theme === 'dark' ? '#15191e' : '#faf9f6';
+  const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = ({ dark: '#15191e', light: '#faf9f6' })[document.documentElement.dataset.theme] || '#f4ead3';
 }
 applyRead();
 const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
@@ -407,8 +407,8 @@ function readSheet() {
     const f = document.documentElement.dataset.font, z = +document.documentElement.dataset.size;
     $('rfonts').innerHTML = FONTS.map(x => '<button type="button" data-f="' + x[0] + '" aria-pressed="' + (x[0] === f) + '" style="font-family:' + ({ naskh: 'Naskh', vazir: 'Vazir', notosans: 'NotoSans', amiri: 'Amiri' })[x[0]] + '"><span>' + x[1] + '</span><small>' + x[2] + '</small></button>').join('');
     const t = document.documentElement.dataset.themeSel, w = document.documentElement.dataset.weight;
-    $('rthemes').innerHTML = [['light', 'فاتح'], ['dark', 'داكن'], ['auto', 'مثل الهاتف']].map(x => '<button type="button" data-t="' + x[0] + '" aria-pressed="' + (x[0] === t) + '">' + x[1] + '</button>').join('');
-    $('rweights').innerHTML = [['b', 'سميك', 600], ['m', 'متوسط', 500], ['n', 'رفيع', 400]].map(x => '<button type="button" data-w="' + x[0] + '" aria-pressed="' + (x[0] === w) + '" style="font-weight:' + x[2] + '">' + x[1] + '</button>').join('');
+    $('rthemes').innerHTML = [['cream', 'سكري'], ['light', 'أبيض'], ['dark', 'داكن'], ['auto', 'مثل الهاتف']].map(x => '<button type="button" data-t="' + x[0] + '" aria-pressed="' + (x[0] === t) + '">' + x[1] + '</button>').join('');
+    $('rweights').innerHTML = [['x', 'سميك جدًا', 700], ['b', 'سميك', 600], ['m', 'متوسط', 500], ['n', 'رفيع', 400]].map(x => '<button type="button" data-w="' + x[0] + '" aria-pressed="' + (x[0] === w) + '" style="font-weight:' + x[2] + '">' + x[1] + '</button>').join('');
     $('rsizes').innerHTML = [1, 2, 3, 4, 5].map(n => '<button type="button" data-s="' + n + '" aria-pressed="' + (n === z) + '" style="font-size:' + (13 + n * 2) + 'px">أ</button>').join('');
   };
   const save = (k, v) => { let r = {}; try { r = JSON.parse(localStorage.getItem(LS_READ) || '{}') || {}; } catch (e) {} r[k] = v; try { localStorage.setItem(LS_READ, JSON.stringify(r)); } catch (e) {} applyRead(); draw(); };
