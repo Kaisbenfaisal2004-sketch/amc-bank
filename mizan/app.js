@@ -17,7 +17,14 @@ const rich = t => String(t || '').split(/\n{2,}/).filter(p => p.trim()).map(p =>
   if (p.startsWith('أي باختصار:')) return '<p class="brief">' + esc(p).replace(/\n/g, '<br>') + '</p>';
   return '<p>' + esc(p).replace(/\n/g, '<br>') + '</p>';
 }).join('');
-const LS_STATE = 'kais_mizan_v1', LS_CONTENT = 'kais_mizan_content', LS_OPEN = 'kais_mizan_open';
+const LS_STATE = 'kais_mizan_v1', LS_CONTENT = 'kais_mizan_content', LS_OPEN = 'kais_mizan_open', LS_STEPS = 'kais_mizan_steps', LS_READ = 'kais_mizan_read';
+const FONTS = [['naskh', 'نسخ', 'خط الكتب: هادئ ومألوف للقراءة الطويلة'], ['vazir', 'فازير', 'حديث وواضح، حروفه مفتوحة'], ['notosans', 'نوتو', 'بسيط ومتوازن'], ['amiri', 'أميري', 'كلاسيكي كخط المصحف والكتب القديمة']];
+function applyRead() {
+  let r = {}; try { r = JSON.parse(localStorage.getItem(LS_READ) || '{}') || {}; } catch (e) {}
+  document.documentElement.dataset.font = FONTS.some(f => f[0] === r.f) ? r.f : 'naskh';
+  document.documentElement.dataset.size = String(r.s >= 1 && r.s <= 5 ? r.s : 3);
+}
+applyRead();
 const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const fmtDate = t => { try { return new Date(t).toLocaleDateString('ar-LY', { year: 'numeric', month: 'long', day: 'numeric' }); } catch (e) { return ''; } };
@@ -233,10 +240,10 @@ function stepBody(i, A) {
     }
     case 2: {
       if (!A.checks || !A.checks.length) return null;
-      const inf = A.inference ? '<div class="premise c"><b>هل تخرج النتيجة من المقدمات؟</b>' + rich(A.inference) + '</div>' : '';
+      const inf = A.inference ? '<div class="ckb"><b class="ckp">هل تخرج النتيجة من المقدمات؟</b>' + rich(A.inference) + '</div>' : '';
       return A.checks.map(c => {
         const v = VERDICTS[c.v] || VERDICTS.unverified;
-        return '<div class="premise"><b>' + esc(c.p) + '</b><div style="margin-top:6px"><span class="verdict" style="background:var(' + v[1] + ')">' + v[0] + '</span>' + (c.c ? '<span class="src">درجة الثقة: ' + esc(c.c) + '</span>' : '') + '</div>' + rich(c.e) + (c.s ? '<div class="src">المصدر: ' + esc(c.s) + '</div>' : '') + '</div>';
+        return '<div class="ckb"><b class="ckp">' + esc(c.p) + '</b><div style="margin:6px 0 10px"><span class="verdict" style="background:var(' + v[1] + ')">' + v[0] + '</span>' + (c.c ? '<span class="src">درجة الثقة: ' + esc(c.c) + '</span>' : '') + '</div>' + rich(c.e) + (c.s ? '<div class="src">المصدر: ' + esc(c.s) + '</div>' : '') + '</div>';
       }).join('') + inf;
     }
     case 3: return A.objection ? rich(A.objection) : null;
@@ -286,11 +293,12 @@ function viewArg(id) {
     '<section class="card claim"><div class="k">الحجة ' + a.id + ' · ' + esc(a.type) + ' · ' + (st === 'done' ? 'فُحصت' : st === 'prog' ? 'قيد الفحص' : 'لم تُفحص بعد') + '</div><h1>' + esc(a.title) + '</h1><div class="facts">' +
     (a.prereq ? '<div class="fact"><span class="k">ما نحتاجه قبلها</span>' + esc(a.prereq) + '</div>' : '') +
     '<div class="fact"><span class="k">أين وردت في الكتب</span>' + esc(a.books) + '</div>' +
-    (terms.length ? '<div class="fact"><span class="k">مصطلحات تحتاجها</span><div class="links">' + terms.map(t => '<a href="#glossary" data-term="' + esc(t.t) + '">' + esc(t.t) + '</a>').join('') + '</div></div>' : '') +
+    (terms.length ? '<details class="fact terms"><summary>مصطلحات تحتاجها (' + terms.length + ')</summary><div class="links">' + terms.map(t => '<a href="#glossary" data-term="' + esc(t.t) + '">' + esc(t.t) + '</a>').join('') + '</div></details>' : '') +
     depFacts(id, A) +
     (A && A.date ? '<div class="fact"><span class="k">تاريخ الفحص</span>' + esc(A.date) + '</div>' : '') + '</div></section>';
   if (!A) h += '<div class="banner">لم نفحص هذه الحجة بعد. حين نفحصها معًا في المحادثة، تصلك نتيجة كل خطوة هنا.</div>';
-  h += '<ol class="steps">' + STEPS.map((s, i) => { const b = stepBody(i, A); return '<li class="step' + (b ? '' : ' empty') + '"><div class="sh"><span class="sn">' + (i + 1) + '</span><h3>' + s[0] + '</h3></div><div class="body">' + (b || esc(s[1])) + '</div></li>'; }).join('') + '</ol>';
+  const sOpen = lsGet(LS_STEPS, {})[id];
+  h += '<div class="steps">' + STEPS.map((s, i) => { const b = stepBody(i, A); const op = sOpen ? sOpen.includes(i) : i === 0 && !!b; return '<details class="stp' + (b ? '' : ' empty') + '" data-i="' + i + '"' + (op ? ' open' : '') + '><summary><span class="sn">' + (i + 1) + '</span><h3>' + s[0] + '</h3></summary><div class="body">' + (b || '<p>' + esc(s[1]) + '</p>') + '</div></details>'; }).join('') + '</div>';
   h += '<section class="card mybox"><h2>موقفي</h2>' +
     '<label class="chk"><input type="checkbox" id="rd"' + (it.read ? ' checked' : '') + '> قرأت فحص هذه الحجة</label>' +
     '<p class="tip">إلى أي حد تقنعك هذه الحجة الآن؟</p><div class="scale" role="group" aria-label="درجة الاقتناع">' +
@@ -303,6 +311,9 @@ function viewArg(id) {
   return h;
 }
 function bindArg(id) {
+  document.querySelectorAll('details.stp').forEach(d => d.addEventListener('toggle', () => {
+    const all = lsGet(LS_STEPS, {}); all[id] = [...document.querySelectorAll('details.stp[open]')].map(x => +x.dataset.i); lsSet(LS_STEPS, all);
+  }));
   document.querySelectorAll('details.sec').forEach(d => d.addEventListener('toggle', () => {
     const all = lsGet(LS_OPEN, {}); all[id] = [...document.querySelectorAll('details.sec[open]')].map(x => +x.dataset.k); lsSet(LS_OPEN, all);
   }));
@@ -383,6 +394,25 @@ window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); }
 document.addEventListener('click', e => { const t = e.target.closest('a[data-term]'); if (t) Q.gq = t.dataset.term; });
 
 start();
+
+/* ---------- reading settings ---------- */
+function readSheet() {
+  const sh = $('rset'); if (!sh) return;
+  const draw = () => {
+    const f = document.documentElement.dataset.font, z = +document.documentElement.dataset.size;
+    $('rfonts').innerHTML = FONTS.map(x => '<button type="button" data-f="' + x[0] + '" aria-pressed="' + (x[0] === f) + '" style="font-family:' + ({ naskh: 'Naskh', vazir: 'Vazir', notosans: 'NotoSans', amiri: 'Amiri' })[x[0]] + '"><span>' + x[1] + '</span><small>' + x[2] + '</small></button>').join('');
+    $('rsizes').innerHTML = [1, 2, 3, 4, 5].map(n => '<button type="button" data-s="' + n + '" aria-pressed="' + (n === z) + '" style="font-size:' + (13 + n * 2) + 'px">أ</button>').join('');
+  };
+  const save = (k, v) => { let r = {}; try { r = JSON.parse(localStorage.getItem(LS_READ) || '{}') || {}; } catch (e) {} r[k] = v; try { localStorage.setItem(LS_READ, JSON.stringify(r)); } catch (e) {} applyRead(); draw(); };
+  $('aa').addEventListener('click', () => { draw(); sh.hidden = false; });
+  sh.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (e.target === sh || (b && b.id === 'rclose')) { sh.hidden = true; return; }
+    if (b && b.dataset.f) save('f', b.dataset.f);
+    if (b && b.dataset.s) save('s', +b.dataset.s);
+  });
+}
+readSheet();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => {}); });

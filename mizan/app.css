@@ -1,9 +1,19 @@
-@font-face{font-family:"Plex Arabic";src:url(../library/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
-@font-face{font-family:"Plex Arabic";src:url(../library/fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2) format("woff2");font-weight:500 600;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
-@font-face{font-family:"Plex Arabic";src:url(../library/fonts/ibm-plex-sans-arabic-arabic-700-normal.woff2) format("woff2");font-weight:700;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
-@font-face{font-family:"Plex Arabic";src:url(../library/fonts/ibm-plex-sans-arabic-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
-@font-face{font-family:"Plex Arabic";src:url(../library/fonts/ibm-plex-sans-arabic-latin-600-normal.woff2) format("woff2");font-weight:500 600;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
-@font-face{font-family:"Plex Arabic";src:url(../library/fonts/ibm-plex-sans-arabic-latin-700-normal.woff2) format("woff2");font-weight:700;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
+@font-face{font-family:"Naskh";src:url(../library/fonts/noto-naskh-arabic-arabic-400-normal.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:"Naskh";src:url(../library/fonts/noto-naskh-arabic-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
+@font-face{font-family:"Naskh";src:url(../library/fonts/noto-naskh-arabic-arabic-600-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:"Naskh";src:url(../library/fonts/noto-naskh-arabic-latin-600-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
+@font-face{font-family:"Vazir";src:url(../library/fonts/vazirmatn-arabic-400-normal.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:"Vazir";src:url(../library/fonts/vazirmatn-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
+@font-face{font-family:"Vazir";src:url(../library/fonts/vazirmatn-arabic-600-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:"Vazir";src:url(../library/fonts/vazirmatn-latin-600-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
+@font-face{font-family:"NotoSans";src:url(../library/fonts/noto-sans-arabic-arabic-400-normal.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:"NotoSans";src:url(../library/fonts/noto-sans-arabic-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
+@font-face{font-family:"NotoSans";src:url(../library/fonts/noto-sans-arabic-arabic-600-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:"NotoSans";src:url(../library/fonts/noto-sans-arabic-latin-600-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
+@font-face{font-family:"Amiri";src:url(../library/fonts/amiri-arabic-400-normal.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:"Amiri";src:url(../library/fonts/amiri-latin-400-normal.woff2) format("woff2");font-weight:400;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
+@font-face{font-family:"Amiri";src:url(../library/fonts/amiri-arabic-700-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:"Amiri";src:url(../library/fonts/amiri-latin-700-normal.woff2) format("woff2");font-weight:600 700;font-display:swap;unicode-range:U+0000-00FF,U+2000-206F,U+2212}
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0}
@@ -14,7 +24,7 @@ body{margin:0}
   --paper:#eef0ec; --surface:#ffffff; --sunk:#e3e7e1; --ink:#18222d; --muted:#596472; --line:#d5dbd3;
   --acc:#1e5d57; --acc-soft:#d9ebe7; --prog:#5f8fb6; --brass:#a87923; --brass-soft:#f3e7cf;
   --v-true:#2f7d3a; --v-partial:#2b7a8c; --v-disputed:#a37609; --v-outdated:#b5591f; --v-false:#b23a3a; --v-unverified:#6b7280;
-  --ui:"Plex Arabic",system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;
+  --rf:"Naskh"; --ui:var(--rf),system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif; --fs:20px; --lh:1.95;
 }
 @media (prefers-color-scheme: dark){:root{
   --paper:#11171d; --surface:#192129; --sunk:#202a33; --ink:#e6ebee; --muted:#9aa6b2; --line:#29343e;
@@ -22,7 +32,7 @@ body{margin:0}
   --v-true:#6cc479; --v-partial:#6fc0d1; --v-disputed:#e0b549; --v-outdated:#ea9461; --v-false:#ec7b7b; --v-unverified:#9ca3af;
   color-scheme:dark}}
 html,body{min-height:100%}
-body{background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:19px;line-height:1.8;-webkit-tap-highlight-color:transparent}
+body{background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:var(--fs);line-height:var(--lh);-webkit-tap-highlight-color:transparent}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
 a{color:var(--acc)}
 input,textarea,select{font:inherit;color:inherit}
@@ -198,3 +208,94 @@ a.dep{display:block}
 .lv-m{background:var(--brass-soft);color:var(--brass)}
 .act{margin-top:6px;font-size:.92rem;color:var(--muted)}
 details.cover{margin-top:10px}
+
+
+/* ---------- calm reading layout (v6) ---------- */
+html[data-font="naskh"]{--rf:"Naskh";--lh:1.95}
+html[data-font="vazir"]{--rf:"Vazir";--lh:1.9}
+html[data-font="notosans"]{--rf:"NotoSans";--lh:1.9}
+html[data-font="amiri"]{--rf:"Amiri";--lh:2.05}
+html[data-size="1"]{--fs:17px} html[data-size="2"]{--fs:18.5px} html[data-size="3"]{--fs:20px} html[data-size="4"]{--fs:22px} html[data-size="5"]{--fs:24px}
+:root{--paper:#faf9f6;--surface:#faf9f6;--sunk:#f0eee8;--ink:#23262b;--muted:#6d717a;--line:#e4e1d9}
+@media (prefers-color-scheme: dark){:root{--paper:#15191e;--surface:#15191e;--sunk:#1f252c;--ink:#e3e6e9;--muted:#9aa3ad;--line:#2a323b}}
+b,strong{font-weight:600}
+h1{font-size:1.3rem;font-weight:600} h2{font-size:1.15rem;font-weight:600} h3{font-size:1.05rem;font-weight:600}
+/* header: small, scrolls away */
+.bar{position:static;border-bottom:1px solid var(--line)}
+.barin{padding-top:8px;padding-bottom:4px}
+.brand a{font-size:1.15rem;font-weight:600}
+.sync span{display:none}
+.aa{font-size:1rem;font-weight:600;color:var(--acc);border:1px solid var(--line);border-radius:10px;padding:0 10px;line-height:1.9}
+.brand .r{display:flex;align-items:center;gap:12px}
+.tabs a{font-size:.85rem}
+.tabs a.on{background:var(--sunk);box-shadow:none}
+/* one surface: no cards inside cards */
+.wrap{gap:18px;padding-inline:max(18px,env(safe-area-inset-left,0px))}
+.card,.step{background:transparent;border-radius:0;padding:0}
+.claim{padding-bottom:6px}
+.claim h1{font-size:1.3rem;line-height:1.6}
+.fact{border-top:0;padding-top:0}
+.fact .k,.claim .k,.crumb{font-size:.8rem}
+details.terms>summary{cursor:pointer;color:var(--acc);font-size:.9rem;list-style:none}
+details.terms>summary::-webkit-details-marker{display:none}
+.links a{font-size:.8rem}
+.steps{gap:0;border-top:1px solid var(--line)}
+details.stp{border-bottom:1px solid var(--line)}
+details.stp>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 0}
+details.stp>summary::-webkit-details-marker{display:none}
+details.stp>summary h3{font-size:1.02rem;font-weight:600;flex:1}
+details.stp>summary::after{content:"⌄";color:var(--muted);font-size:1.1rem;transition:transform .15s}
+details.stp[open]>summary::after{transform:rotate(180deg)}
+details.stp.empty>summary h3{color:var(--muted);font-weight:400}
+.sn{width:26px;height:26px;font-size:.8rem;font-weight:600;background:var(--sunk);color:var(--muted)}
+details.stp[open] .sn{background:var(--acc);color:#fff}
+.stp .body{padding:0 0 18px}
+.body p{margin:0 0 .9em}
+.body ul{margin:.2em 0 .9em}
+.body li{margin:.25em 0}
+/* inner blocks: quiet */
+.stands{background:transparent;border-inline-start:3px solid var(--acc);border-radius:0;padding:2px 14px;margin:0 0 14px}
+details.sec>summary{font-weight:600;padding:12px 0}
+.sk{width:24px;height:24px;font-size:.78rem;border-radius:6px}
+p.brief{background:transparent;border-inline-start:3px solid var(--brass);border-radius:0;font-weight:400;padding:2px 14px}
+details.guess{background:var(--sunk);border-radius:12px;padding:12px 14px}
+details.guess>summary{font-weight:400}
+.gk{font-weight:600;color:var(--muted);font-size:.75rem}
+.premise{border-inline-start-width:2px;padding:2px 14px}
+.premise b{font-weight:600}
+.verdict{font-weight:600;font-size:.74rem}
+.quote{background:transparent;border-inline-start:2px solid var(--line);border-radius:0}
+.qs{background:transparent;border-top:1px solid var(--line);border-radius:0;padding:8px 0 0}
+.weight{background:transparent;border-inline-start:3px solid var(--line);border-radius:0;padding:2px 14px}
+.next{background:var(--sunk);border-inline-start-width:3px;border-radius:12px}
+.mybox{border:0;border-top:2px solid var(--brass);padding-top:14px}
+.pager a{background:var(--sunk)}
+.rows{background:transparent;border-radius:0;border-top:1px solid var(--line)}
+.row{padding:12px 0;border-top:0;border-bottom:1px solid var(--line)}
+.row .t{line-height:1.7}
+.num{font-size:.95rem;font-weight:600}
+.ledger{border-radius:16px}
+/* reading settings sheet */
+.sheet{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.35);display:flex;align-items:flex-end}
+.sheet .pan{background:var(--paper);width:100%;max-width:720px;margin:0 auto;border-radius:18px 18px 0 0;padding:16px 18px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 24px rgba(0,0,0,.15)}
+.sheet h2{font-size:1rem;margin-bottom:8px}
+.fonts{display:grid;gap:8px}
+.fonts button{display:flex;justify-content:space-between;align-items:center;border:1.5px solid var(--line);border-radius:12px;padding:8px 14px;text-align:start;font-size:1.05rem;line-height:1.7}
+.fonts button small{font-size:.75rem;color:var(--muted)}
+.fonts button[aria-pressed="true"]{border-color:var(--acc);background:var(--acc-soft)}
+.sizes{display:flex;gap:8px;margin-top:14px}
+.sizes button{flex:1;border:1.5px solid var(--line);border-radius:12px;padding:6px 0;line-height:1.4}
+.sizes button[aria-pressed="true"]{border-color:var(--acc);background:var(--acc-soft);color:var(--acc)}
+.sheet .sample{margin:14px 0 4px;font-size:var(--fs);line-height:var(--lh);color:var(--ink)}
+.ckb{border-top:1px solid var(--line);padding-top:16px;margin-top:18px}
+.ckb:first-child{border-top:0;padding-top:0;margin-top:0}
+.ckb .ckp{display:block;font-weight:600;line-height:1.75}
+.facts{font-size:.92rem;gap:12px}
+.fact .k{margin-bottom:0}
+.row:hover{background:transparent}
+@media (hover:hover){.row:hover{background:var(--sunk)}}
+.level{margin-top:6px}
+.ledger{background:var(--sunk);color:var(--ink);box-shadow:none}
+.strip a{background:rgba(0,0,0,.10)}
+@media (prefers-color-scheme: dark){.ledger{background:var(--sunk);color:var(--ink)}.strip a{background:rgba(255,255,255,.12)}}
+.next{background:transparent;border:1px solid var(--line);border-inline-start:3px solid var(--acc)}

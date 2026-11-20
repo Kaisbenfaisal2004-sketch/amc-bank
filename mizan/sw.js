@@ -1,12 +1,11 @@
 // Offline copy of ميزان الحجج itself (the map, the examinations and your notes are kept by Firebase on the device, not here).
 // Answers from the stored copy straight away, and refreshes it in the background when online.
-const CACHE = 'mizan-v5';
+const CACHE = 'mizan-v6';
 const SHELL = [
   './', 'index.html', 'app.css', 'app.js', 'store.js', '../config.js', '../vendor/firebase.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png',
   '../icons/icon-192.png', '../lessons/icons/icon-192.png', '../library/icons/icon-192.png',
-  '../library/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2','../library/fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2','../library/fonts/ibm-plex-sans-arabic-arabic-700-normal.woff2',
-  '../library/fonts/ibm-plex-sans-arabic-latin-400-normal.woff2','../library/fonts/ibm-plex-sans-arabic-latin-600-normal.woff2','../library/fonts/ibm-plex-sans-arabic-latin-700-normal.woff2',
+  '../library/fonts/noto-naskh-arabic-arabic-400-normal.woff2','../library/fonts/noto-naskh-arabic-latin-400-normal.woff2','../library/fonts/noto-naskh-arabic-arabic-600-normal.woff2','../library/fonts/noto-naskh-arabic-latin-600-normal.woff2','../library/fonts/vazirmatn-arabic-400-normal.woff2','../library/fonts/vazirmatn-latin-400-normal.woff2','../library/fonts/vazirmatn-arabic-600-normal.woff2','../library/fonts/vazirmatn-latin-600-normal.woff2','../library/fonts/noto-sans-arabic-arabic-400-normal.woff2','../library/fonts/noto-sans-arabic-latin-400-normal.woff2','../library/fonts/noto-sans-arabic-arabic-600-normal.woff2','../library/fonts/noto-sans-arabic-latin-600-normal.woff2','../library/fonts/amiri-arabic-400-normal.woff2','../library/fonts/amiri-latin-400-normal.woff2','../library/fonts/amiri-arabic-700-normal.woff2','../library/fonts/amiri-latin-700-normal.woff2',
 ];
 
 self.addEventListener('install', e => {
