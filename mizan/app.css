@@ -163,3 +163,27 @@ label.chk input{width:22px;height:22px;accent-color:var(--acc)}
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:12px;font-size:.9rem;z-index:40;max-width:90vw}
 @media (max-width:420px){.strip a{height:28px}.strip{gap:4px}.strip .grp{gap:1px}}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* lessons */
+.stands{background:var(--acc-soft);border-radius:14px;padding:10px 14px;margin-bottom:12px}
+.stands p{margin:.3em 0}
+.lessonref{margin:0 0 12px}
+.lessonref .rn{display:block;font-size:.85rem;color:var(--muted);margin-top:2px}
+details.sec{border-top:1px solid var(--line)}
+details.sec>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 2px;font-weight:700}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:"+";margin-inline-start:auto;color:var(--acc);font-size:1.3rem;font-weight:400}
+details.sec[open]>summary::after{content:"−"}
+.sk{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:var(--sunk);color:var(--muted);font-size:.85rem}
+details.sec[open] .sk{background:var(--acc);color:#fff}
+.sb{padding:0 2px 14px}
+p.brief{border-inline-start:4px solid var(--brass);background:var(--brass-soft);padding:8px 12px;border-radius:10px;font-weight:600}
+details.guess{background:var(--sunk);border-radius:14px;padding:10px 14px;margin:12px 0}
+details.guess>summary{cursor:pointer;list-style:none;font-weight:600}
+details.guess>summary::-webkit-details-marker{display:none}
+.gk{display:block;font-size:.78rem;color:var(--brass);font-weight:700}
+details.guess>summary::after{content:"اضغط لترى الجواب";display:block;font-size:.78rem;color:var(--muted);font-weight:400;margin-top:4px}
+details.guess[open]>summary::after{content:none}
+.ga{border-top:1px solid var(--line);margin-top:8px}
+.qs{margin-top:14px;background:var(--acc-soft);border-radius:14px;padding:4px 14px 10px}
+.chip.lesson{background:var(--acc-soft);color:var(--acc)}

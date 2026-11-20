@@ -6,19 +6,30 @@ import { createStore } from './store.js';
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const paras = t => String(t || '').split(/\n{2,}/).filter(p => p.trim()).map(p => '<p>' + esc(p).replace(/\n/g, '<br>') + '</p>').join('');
-const LS_STATE = 'kais_mizan_v1', LS_CONTENT = 'kais_mizan_content';
+// rich text: blank line = new block; lines starting "• " = a list; a block starting "أي باختصار:" = the short restatement;
+// a block starting "؟ " = a question to think about first, with its answer after " || " behind a tap
+const rich = t => String(t || '').split(/\n{2,}/).filter(p => p.trim()).map(p => {
+  p = p.trim();
+  if (p.startsWith('؟ ')) { const [q, a] = p.slice(2).split(' || '); return '<details class="guess"><summary><span class="gk">توقّف وفكّر</span>' + esc(q) + '</summary><div class="ga">' + paras(a || '') + '</div></details>'; }
+  const lines = p.split('\n');
+  if (lines.every(l => l.startsWith('• '))) return '<ul>' + lines.map(l => '<li>' + esc(l.slice(2)) + '</li>').join('') + '</ul>';
+  if (lines.length > 1 && lines.slice(1).every(l => l.startsWith('• ')) ) return '<p>' + esc(lines[0]) + '</p><ul>' + lines.slice(1).map(l => '<li>' + esc(l.slice(2)) + '</li>').join('') + '</ul>';
+  if (p.startsWith('أي باختصار:')) return '<p class="brief">' + esc(p).replace(/\n/g, '<br>') + '</p>';
+  return '<p>' + esc(p).replace(/\n/g, '<br>') + '</p>';
+}).join('');
+const LS_STATE = 'kais_mizan_v1', LS_CONTENT = 'kais_mizan_content', LS_OPEN = 'kais_mizan_open';
 const lsGet = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const fmtDate = t => { try { return new Date(t).toLocaleDateString('ar-LY', { year: 'numeric', month: 'long', day: 'numeric' }); } catch (e) { return ''; } };
 
 const LEVELS = { 1: 'المعرفة والعقل', 2: 'الكون', 3: 'الحياة', 4: 'الأخلاق والمعنى والدين', 5: 'النبوة والقرآن', 6: 'أحكام وقضايا اجتماعية', 7: 'الحضارة والعلمانية', 8: 'الأديان الأخرى والروحانيات', 9: 'توجيهي (ليس حجة)' };
 const STEPS = [
-  ['التأسيس', 'المفاهيم التي تقوم عليها الحجة، من الصفر وبحياد، قبل كلام الكاتب.'],
+  ['التأسيس', 'على ماذا تقف الحجة، ثم بناء كل قطعة منها من الصفر. في أول حجة من كل مجموعة يكون هذا درسًا كاملًا في العلم الذي تحتاجه.'],
   ['الحجة كما يقولها الكاتب', 'أقوى صياغة لها من كل المواضع التي وردت فيها، مفككة إلى مقدمات ونتيجة، مع نص الكاتب بجانب التبسيط.'],
   ['فحص كل مقدمة', 'كل مقدمة وحدها، بالأداة التي تناسب نوعها، مع حكم ومصدر ودرجة ثقة.'],
   ['أقوى اعتراض', 'أقوى ما يقوله المخالفون الجادون، بأسمائهم ومصادرهم.'],
   ['أقوى جواب على الاعتراض', 'من الكاتب أو من غيره من المدافعين، إن كان جوابهم أقوى.'],
-  ['الخلاصة', 'ما ثبت، وما بقي مفتوحًا، وأين يتوقف الحكم على معاييرك أنت.'],
+  ['نقطة الحكم', 'ما ثبت، وما بقي مفتوحًا، وما يتوقف على معاييرك أنت، ثم أسئلة تختبر بها فهمك.'],
   ['المصادر', 'كل ما رجعنا إليه في هذا الفحص، لتراجعه بنفسك.'],
 ];
 const VERDICTS = {
@@ -35,6 +46,7 @@ S.items = S.items || {}; S.history = S.history || [];
 let C = lsGet(LS_CONTENT, null);          // { version, args, books, glossary, analyses }
 function saveLocal() { lsSet(LS_STATE, S); }
 const argsList = () => (C && C.args) || [];
+const hasLesson = id => { const a = C && C.analyses && C.analyses[id]; return !!(a && a.foundation && a.foundation.lesson); };
 const statusOf = id => { const a = C && C.analyses && C.analyses[id]; return !a ? 'none' : a.status === 'prog' ? 'prog' : 'done'; };
 
 /* ---------- account + sync ---------- */
@@ -188,6 +200,7 @@ function ledger(q) {
       const st = statusOf(a.id), it = S.items[a.id] || {};
       h += '<a class="row ' + st + '" href="#arg-' + a.id + '"><span class="num">' + a.id + '</span><span><div class="t">' + esc(a.title) + '</div><div class="meta"><span class="chip">' + esc(a.type) + '</span>' +
         (st === 'done' ? '<span class="chip">فُحصت</span>' : st === 'prog' ? '<span class="chip">قيد الفحص</span>' : '') +
+        (hasLesson(a.id) ? '<span class="chip lesson">فيها درس</span>' : '') +
         (it.read ? '<span class="chip mine">قرأتها</span>' : '') + (it.conv ? '<span class="chip mine">موقفك: ' + convLabel(it.conv) + '</span>' : '') + '</div></span></a>';
     }
     h += '</div></section>';
@@ -198,10 +211,18 @@ function stepBody(i, A) {
   if (!A) return null;
   const li = arr => '<ul>' + arr.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>';
   switch (i) {
-    case 0: return A.foundation ? paras(A.foundation) : null;
+    case 0: {
+      const F = A.foundation; if (!F) return null;
+      if (typeof F === 'string') return rich(F);
+      let h = F.intro ? '<div class="stands">' + rich(F.intro) + '</div>' : '';
+      if (F.ref) { const r = argsList().find(x => x.id === F.ref.id); h += '<a class="next brass lessonref" href="#arg-' + F.ref.id + '"><span><small>الدرس الكامل لهذه المجموعة</small>' + (r ? F.ref.id + '. ' + esc(r.title) : 'الحجة ' + F.ref.id) + (F.ref.note ? '<span class="rn">' + esc(F.ref.note) + '</span>' : '') + '</span><span class="go">افتح</span></a>'; }
+      const open = lsGet(LS_OPEN, {})[CUR] || [];
+      (F.sections || []).forEach((x, k) => { h += '<details class="sec" data-k="' + k + '"' + (open.includes(k) ? ' open' : '') + '><summary><span class="sk">' + (k + 1) + '</span>' + esc(x.h) + '</summary><div class="sb">' + rich(x.b) + '</div></details>'; });
+      return h;
+    }
     case 1: {
       const g = A.argument; if (!g) return null;
-      let h = g.intro ? paras(g.intro) : '';
+      let h = g.intro ? rich(g.intro) : '';
       (g.premises || []).forEach((p, k) => { h += '<div class="premise"><b>المقدمة ' + (k + 1) + ':</b> ' + esc(p) + '</div>'; });
       if (g.conclusion) h += '<div class="premise c"><b>النتيجة:</b> ' + esc(g.conclusion) + '</div>';
       if (g.quote) h += '<div class="quote">«' + esc(g.quote.text) + '»<cite>' + esc(g.quote.src) + '</cite></div>';
@@ -211,17 +232,18 @@ function stepBody(i, A) {
       if (!A.checks || !A.checks.length) return null;
       return A.checks.map(c => {
         const v = VERDICTS[c.v] || VERDICTS.unverified;
-        return '<div class="premise"><b>' + esc(c.p) + '</b><div style="margin-top:6px"><span class="verdict" style="background:var(' + v[1] + ')">' + v[0] + '</span>' + (c.c ? '<span class="src">درجة الثقة: ' + esc(c.c) + '</span>' : '') + '</div>' + paras(c.e) + (c.s ? '<div class="src">المصدر: ' + esc(c.s) + '</div>' : '') + '</div>';
+        return '<div class="premise"><b>' + esc(c.p) + '</b><div style="margin-top:6px"><span class="verdict" style="background:var(' + v[1] + ')">' + v[0] + '</span>' + (c.c ? '<span class="src">درجة الثقة: ' + esc(c.c) + '</span>' : '') + '</div>' + rich(c.e) + (c.s ? '<div class="src">المصدر: ' + esc(c.s) + '</div>' : '') + '</div>';
       }).join('');
     }
-    case 3: return A.objection ? paras(A.objection) : null;
-    case 4: return A.reply ? paras(A.reply) : null;
+    case 3: return A.objection ? rich(A.objection) : null;
+    case 4: return A.reply ? rich(A.reply) : null;
     case 5: {
       const s = A.summary; if (!s) return null;
       let h = '';
       if (s.established && s.established.length) h += '<h3>ما ثبت</h3>' + li(s.established);
       if (s.open && s.open.length) h += '<h3>ما بقي مفتوحًا</h3>' + li(s.open);
       if (s.yours && s.yours.length) h += '<h3>ما يتوقف على معاييرك</h3>' + li(s.yours);
+      if (A.questions && A.questions.length) h += '<div class="qs"><h3>أسئلة لنفسك</h3><ol>' + A.questions.map(q => '<li>' + esc(q) + '</li>').join('') + '</ol><p class="tip">فكّر فيها قبل أن تكمل. إن لم تقدر، ارجع إلى خطوة «فحص كل مقدمة».</p></div>';
       return h || null;
     }
     case 6: {
@@ -231,7 +253,9 @@ function stepBody(i, A) {
   }
   return null;
 }
+let CUR = null;
 function viewArg(id) {
+  CUR = id;
   if (!C) return viewHome();
   const a = argsList().find(x => x.id === id);
   if (!a) return '<div class="empty">لا توجد حجة بهذا الرقم. <a href="#home">ارجع إلى الخريطة</a></div>';
@@ -257,6 +281,9 @@ function viewArg(id) {
   return h;
 }
 function bindArg(id) {
+  document.querySelectorAll('details.sec').forEach(d => d.addEventListener('toggle', () => {
+    const all = lsGet(LS_OPEN, {}); all[id] = [...document.querySelectorAll('details.sec[open]')].map(x => +x.dataset.k); lsSet(LS_OPEN, all);
+  }));
   let conv = (S.items[id] || {}).conv || null;
   document.querySelectorAll('.scale button').forEach(b => b.addEventListener('click', () => {
     const v = +b.dataset.v; conv = conv === v ? null : v;
@@ -271,15 +298,15 @@ function bindArg(id) {
   $('rd').addEventListener('change', save);
 }
 function viewMethod() {
-  return '<section><h1>طريقة الفحص</h1><p>كل حجة تمر بسبع خطوات بالترتيب نفسه. الهدف أن تعرف بدقة أين تقف الحجة على أرض صلبة، وأين تحتاج سندًا إضافيًا.</p></section>' +
+  const card = (t, body) => '<section class="card"><h2>' + t + '</h2>' + body + '</section>';
+  return '<section><h1>طريقة الفحص</h1><p>نتعلم هنا كما تتعلم في الجامعة: نبني الأساس من الصفر، ونفهم الآلية، ثم نصل إلى الحكم بأنفسنا. والفرق الوحيد أن الكتاب هنا ليس مرجعًا موثوقًا نشرحه، بل هو موضوع الفحص نفسه.</p></section>' +
+    card('كيف يُكتب الشرح', '<ul><li>جملة قصيرة، فيها فكرة واحدة. وكلمات من الحياة اليومية.</li><li>لكل فكرة صعبة صورة محسوسة، وبعدها سطر يبدأ بـ«أي باختصار».</li><li>لا «كما تعلم» ولا «من المعروف». كل ما نحتاجه نبنيه من الصفر.</li><li>أسألك قبل أن أجيب. تجد في الشرح صناديق «توقّف وفكّر»: فكّر أولًا، ثم افتح الجواب.</li><li>كل حكم يخرج من الشرح نفسه، فتستطيع أن تصل إليه بنفسك، لا أن تحفظه.</li></ul>') +
+    card('المجموعات والدروس', '<p>الحجج مقسمة إلى مجموعات حسب العلم الذي تحتاجه: المعرفة، ثم الكون، ثم الحياة، وهكذا. وأول حجة في كل مجموعة يبدأ «التأسيس» فيها بدرس كامل في هذا العلم، مقسم إلى أقسام تفتحها واحدًا واحدًا. وفي باقي حجج المجموعة تجد تذكيرًا قصيرًا ورابطًا إلى الدرس.</p><p class="tip">في الدرس: ما يتفق عليه المختصون، وما يختلفون فيه، وما زال مجهولًا، وأشهر أخطاء الفهم، وأقوى ما يقوله الطرفان.</p>') +
     '<ol class="steps">' + STEPS.map((s, i) => '<li class="step"><div class="sh"><span class="sn">' + (i + 1) + '</span><h3>' + s[0] + '</h3></div><div class="body"><p>' + esc(s[1]) + '</p></div></li>').join('') + '</ol>' +
-    '<section class="card"><h2>كيف تُفحص المقدمة حسب نوعها</h2>' +
-    '<h3 style="margin-top:14px">المقدمة العلمية</h3><p>نقارنها بما يقوله العلم اليوم في مصادر متخصصة، وننتبه إلى تاريخ المعلومة: هل كانت صحيحة وقت كتابة الكتاب ثم تغيرت؟</p>' +
-    '<h3>النقل عن شخص</h3><p>نرجع إلى المصدر الأصلي، وننظر هل نُقل الكلام بدقة وفي سياقه، وهل قصد صاحبه ما يُنسب إليه.</p>' +
-    '<h3>المقدمة الفلسفية</h3><p>نسأل: هل هي مسلّمة أصلًا، أم يختلف فيها الفلاسفة؟ وهل تلزم النتيجة منها فعلًا، أم هناك قفزة في الطريق؟</p>' +
-    '<h3>الادعاء التاريخي أو النصي</h3><p>نسأل عن المصدر وتاريخ تدوينه، وعن اللغة الأصلية للنص، وعن تفسير أصحاب النص أنفسهم له.</p></section>' +
+    card('ما يختلف عن دراسة الطب', '<ul><li>ملخص الطب مدقق، فنشرحه كما هو. أما كتب الكاتب فنتحقق من كل معلومة فيها بمصدر متخصص.</li><li>في الطب يكفيك الجواب الصحيح. هنا لا تحكم حكمًا عادلًا حتى ترى أقوى ما يقوله الطرف الآخر.</li><li>في الطب للسؤال قرار واحد. هنا نصل إلى ثلاثة أشياء: ما ثبت، وما بقي مفتوحًا، وما يتوقف على معاييرك. والحكم في الأسئلة الكبرى لك وحدك.</li></ul>') +
+    card('كيف تُفحص المقدمة حسب نوعها', '<h3 style="margin-top:14px">المقدمة العلمية</h3><p>نقارنها بما يقوله العلم اليوم في مصادر متخصصة، وننتبه إلى تاريخ المعلومة.</p><h3>النقل عن شخص</h3><p>نرجع إلى المصدر الأصلي: هل نُقل الكلام بدقة، وفي سياقه، وبالمعنى الذي قصده صاحبه؟</p><h3>المقدمة الفلسفية</h3><p>هل هي مسلّمة أصلًا، أم يختلف فيها الفلاسفة؟ وهل تلزم النتيجة منها فعلًا، أم في الطريق قفزة؟</p><h3>الادعاء التاريخي أو النصي</h3><p>نسأل عن المصدر وتاريخ تدوينه، وعن اللغة الأصلية للنص، وعن تفسير أصحاب النص أنفسهم له.</p>') +
     '<section class="card"><h2>أحكام المقدمات</h2><div class="vlist">' + Object.values(VERDICTS).map(v => '<span class="verdict" style="background:var(' + v[1] + ')">' + v[0] + '</span>').join('') + '</div>' +
-    '<p class="tip" style="margin-top:12px">مع كل حكم نذكر المصدر ودرجة الثقة. وفي الأسئلة الكبرى، مثل وجود الخالق، لا يصدر حكم نهائي: نرتب الحجج، والحكم لك.</p></section>';
+    '<p class="tip" style="margin-top:12px">مع كل حكم نذكر المصدر ودرجة الثقة.</p></section>';
 }
 function viewGlossary() {
   if (!C) return viewHome();
