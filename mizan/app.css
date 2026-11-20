@@ -337,3 +337,21 @@ html[data-theme="cream"] .strip a{background:rgba(60,40,0,.13)}
 html[data-weight="x"] h1{font-size:1.35rem}
 .themes,.weights{flex-wrap:wrap}.themes button,.weights button{min-width:calc(50% - 4px)}
 details.stp>summary h3,details.sec>summary,.claim h1{font-weight:var(--fb)}details.stp>summary h3{font-size:1.08rem}
+
+/* checks: one premise at a time, verdict after the explanation */
+.ckhint{font-size:.85rem;color:var(--muted);margin:0 0 6px}
+details.ck{border-top:1px solid var(--line)}
+details.ck:first-of-type{border-top:0}
+details.ck>summary{list-style:none;cursor:pointer;display:flex;gap:10px;align-items:flex-start;padding:12px 0;font-weight:var(--fb);line-height:1.75}
+details.ck>summary::-webkit-details-marker{display:none}
+details.ck>summary::before{content:"+";color:var(--acc);font-weight:700;flex:none;width:18px;text-align:center}
+details.ck[open]>summary::before{content:"−"}
+details.ck>summary{color:var(--acc)}
+details.ck[open]>summary{color:var(--ink)}
+.ckin{padding:0 0 16px}
+.vline{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 4px;padding-top:10px;border-top:1px dashed var(--line)}
+.vk{font-weight:var(--fb)}
+.src.small{font-size:.78rem;font-weight:400;color:var(--muted);line-height:1.6}
+/* follow the chosen thickness everywhere */
+p.brief,details.guess>summary,.stands,.stands p,.row .t{font-weight:var(--fw)}
+.gk{font-weight:var(--fb)}

@@ -245,10 +245,11 @@ function stepBody(i, A) {
     }
     case 2: {
       if (!A.checks || !A.checks.length) return null;
-      const inf = A.inference ? '<div class="ckb"><b class="ckp">هل تخرج النتيجة من المقدمات؟</b>' + rich(A.inference) + '</div>' : '';
-      return A.checks.map(c => {
+      const inf = A.inference ? '<details class="ck"><summary class="ckp">هل تخرج النتيجة من المقدمات؟</summary><div class="ckin">' + rich(A.inference) + '</div></details>' : '';
+      const hint = '<p class="ckhint">اضغط على أي مقدمة لتفتح فحصها. والحكم في آخر كل فحص، بعد الشرح.</p>';
+      return hint + A.checks.map(c => {
         const v = VERDICTS[c.v] || VERDICTS.unverified;
-        return '<div class="ckb"><b class="ckp">' + esc(c.p) + '</b><div style="margin:6px 0 10px"><span class="verdict" style="background:var(' + v[1] + ')">' + v[0] + '</span>' + (c.c ? '<span class="src">درجة الثقة: ' + esc(c.c) + '</span>' : '') + '</div>' + rich(c.e) + (c.s ? '<div class="src">المصدر: ' + esc(c.s) + '</div>' : '') + '</div>';
+        return '<details class="ck"><summary class="ckp">' + esc(c.p) + '</summary><div class="ckin">' + rich(c.e) + '<div class="vline"><span class="vk">الحكم:</span><span class="verdict" style="background:var(' + v[1] + ')">' + v[0] + '</span>' + (c.c ? '<span class="src">درجة الثقة: ' + esc(c.c) + '</span>' : '') + '</div>' + (c.s ? '<div class="src small">المصدر: ' + esc(c.s) + '</div>' : '') + '</div></details>';
       }).join('') + inf;
     }
     case 3: return A.objection ? rich(A.objection) : null;
